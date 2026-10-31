@@ -5,7 +5,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom';
-import { Home, Info, Settings, UserRound } from 'lucide-react';
+import { Gamepad2, Home, Info, Settings, UserRound } from 'lucide-react';
 import { AppShell } from '@mister-guiiug/dev-pwa-config/react/app-shell';
 import { ObservabilityBoundary } from '@mister-guiiug/dev-pwa-config/react/error-boundary';
 import { ConnectionBanner } from '@mister-guiiug/dev-pwa-config/react/connection-banner';
@@ -18,6 +18,7 @@ import { HomeScreen } from './features/home/HomeScreen.tsx';
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx';
 import { AboutScreen } from './features/about/AboutScreen.tsx';
 import { AccountScreen } from './features/account/AccountScreen.tsx';
+import { AdminScreen } from './features/arcade/AdminScreen.tsx';
 
 /**
  * LE CADRE : `AppShell` du socle (en-tête, contenu borné, barre basse).
@@ -70,6 +71,11 @@ export function Shell() {
       end: true,
     },
     {
+      href: '/admin',
+      label: t('nav.admin'),
+      icon: <Gamepad2 aria-hidden="true" />,
+    },
+    {
       href: '/reglages',
       label: t('nav.settings'),
       icon: <Settings aria-hidden="true" />,
@@ -96,6 +102,7 @@ export function Shell() {
    */
   const titles: Record<string, string> = {
     '/': t('app.name'),
+    '/admin': t('admin.title'),
     '/reglages': t('settings.title'),
     '/compte': t('account.title'),
     '/a-propos': t('about.title'),
@@ -152,6 +159,7 @@ export function Shell() {
     >
       <Routes>
         <Route path="/" element={<HomeScreen />} />
+        <Route path="/admin" element={<AdminScreen />} />
         <Route path="/reglages" element={<SettingsScreen />} />
         <Route path="/compte" element={<AccountScreen />} />
         <Route path="/a-propos" element={<AboutScreen />} />

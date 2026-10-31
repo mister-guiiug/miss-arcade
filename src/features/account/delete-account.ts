@@ -1,6 +1,7 @@
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
 import { supabase } from '../../backend/supabase.ts';
 import { notesStore } from '../../backend/local.ts';
+import { arcadeStore } from '../arcade/store.ts';
 
 const log = createLogger('compte');
 
@@ -61,6 +62,7 @@ export async function deleteMyAccount(): Promise<void> {
   }
 
   notesStore.clear();
+  arcadeStore.clear();
 
   const { error: deconnexion } = await db.auth.signOut({ scope: 'local' });
   // La session locale qui résiste ne remet pas le compte en place : on le

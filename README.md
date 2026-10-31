@@ -1,6 +1,6 @@
 # miss-arcade
 
-Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.
+Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots pondérés, messages personnalisés, formulaire leads, utilisable hors ligne.
 
 Application PWA de la famille `miss-*` / `mister-*`, née du squelette
 [`pwa-starter-kit`](https://github.com/mister-guiiug/pwa-starter-kit) et bâtie
