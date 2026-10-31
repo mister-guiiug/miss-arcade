@@ -1,0 +1,84 @@
+{
+  "name": "miss-arcade",
+  "private": true,
+  "license": "MIT",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.21.0"
+  },
+  "description": "Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build && pwa-bundle-budget && pwa-doctor --strict",
+    "build:analyze": "node scripts/with-env.mjs ANALYZE=1 -- npm run build",
+    "preview": "vite preview --base /miss-arcade/",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "type-check": "tsc -b",
+    "type-check:7": "pwa-typecheck-7",
+    "doctor": "pwa-doctor",
+    "icons": "pwa-icons --source public/favicon.svg --out public/icons --maskable --bg 59,110,165",
+    "prepare": "husky || true",
+    "screenshots": "pwa-screenshots --wide-path reglages"
+  },
+  "bundleBudget": {
+    "_pourquoi": "REPOSÉ À LA MARGE QUE LA RÈGLE DEMANDE, le 20/09/2026. Les trois bornes étaient à 0,2 à 0,6 % du poids mesuré — 479 kB sous 480, 261,0 sous 262, 159,0 sous 160 — alors que le bin qui les vérifie dit « un budget se pose à poids courant + marge », marge 10 % par défaut, et que `pwa-doctor` répète « poser le budget à +10 % ». Une marge d'un kilo-octet ne mesure plus rien : elle fait rougir LA CI DU SOCLE, qui construit ce squelette sur le paquet candidat à chaque PR, dès qu'un composant partagé gagne une ligne. Arrivé le 20/09 avec `BottomNav navigate` et `items[].load` (dev-pwa-config#326) : +1 kB brut sur le morceau principal, +0,4 kB gzip au total, et une borne rouge pour la fonctionnalité que ce squelette est justement là pour montrer. Les valeurs ci-dessous sont le relevé EN CI de `main` (run 35510079498 : 261,0 / 159,0 / 479) porté à +10 % et arrondi au kilo-octet supérieur — la formule de `pwa-bundle-budget` elle-même. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/miss-arcade --log | grep 'TOTAL gzip'. LE COÛT DE POSTHOG RESTE DIT, et c'est pour ça que la troisième borne existe : `totalGzipKb` additionne TOUT le JS émis, morceaux différés compris, et `posthog-js` (48,9 kB gzip — l'entrée `module.slim.js` et non l'entrée par défaut, 48,7 kB économisés) est chargé par le `loader` d'`App.tsx` APRÈS l'accord : un visiteur qui refuse ne le télécharge jamais. `preloadGzipKb` mesure ce que `dist/index.html` référence vraiment, et lui ne bouge pas avec PostHog.",
+    "totalGzipKb": 288,
+    "preloadGzipKb": 175,
+    "mainChunkKb": 527
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@eslint/js": "^10.0.1",
+    "@mister-guiiug/dev-pwa-config": "^6.28.1",
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/coverage-v8": "^5.0.5",
+    "eslint": "^10.13.0",
+    "husky": "^9.1.7",
+    "jsdom": "^30.1.3",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
+    "rollup-plugin-visualizer": "^7.1.1",
+    "sharp": "^0.35.5",
+    "typescript": "~6.0.3",
+    "typescript-7": "npm:typescript@~7.0.2",
+    "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "lucide-react": "^1.64.0",
+    "posthog-js": "^1.442.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.6.7",
+    "zustand": "^5.0.16"
+  },
+  "overrides": {
+    "eslint-plugin-jsx-a11y": {
+      "eslint": "$eslint"
+    },
+    "@rolldown/plugin-babel": {
+      "@babel/plugin-transform-runtime": "^7.29.0"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+import { defineConfig } from 'vitest/config';
+import { fileURLToPath } from 'node:url';
+import react from '@vitejs/plugin-react';
+import { baseTestOptions } from '@mister-guiiug/dev-pwa-config/vitest-base';
+
+const pwaRegisterDouble = fileURLToPath(
+  import.meta.resolve('@mister-guiiug/dev-pwa-config/testing/pwa-register')
+);
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      // vite-plugin-pwa injecte ce module virtuel au dev et au build. Vitest ne
+      // passe pas par le greffon : sans alias, tout test qui tire `App.tsx`
+      // échoue à la résolution, avant d'avoir rien éprouvé. Un `vi.mock` ne
+      // suffit pas : il n'agit qu'à l'exécution. La cible est le double du
+      // socle, le même que celui de mister-settle et de mister-molkky.
+      'virtual:pwa-register': pwaRegisterDouble,
+    },
+  },
+  test: {
+    ...baseTestOptions,
+    // Les specs Playwright vivent dans `e2e/` : Vitest ne doit pas y piocher.
+    exclude: ['**/node_modules/**', '**/e2e/**'],
+    // Vitest stube les feuilles : `import … from './index.css?raw'` rendrait
+    // la chaîne VIDE, et `src/palette.test.ts` ne mesurerait rien. On n'ouvre
+    // que la lecture BRUTE de cette feuille ; un `import './index.css'` reste
+    // stubé, et Tailwind n'est jamais compilé pendant les tests (même réglage
+    // que mister-footcoach).
+    css: { include: [/index\.css\?raw$/] },
+  },
+});

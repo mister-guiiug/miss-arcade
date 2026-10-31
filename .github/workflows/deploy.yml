@@ -1,0 +1,46 @@
+# Déploiement GitHub Pages, délégué au réutilisable de la famille.
+#
+# PAS DE `concurrency` ICI : le réutilisable déclare déjà le sien (`group:
+# pages`). Redoublé dans l'appelant, GitHub refuse le fichier AVANT de créer un
+# seul job, sans autre message que « workflow file issue ».
+#
+# UNE SEULE `build-env`, et elle montre le motif : les `VITE_*` se lisent dans
+# `vars` — jamais dans `secrets`, que Vite copie de toute façon dans le bundle.
+# Le squelette démarre sans configuration et doit le rester : une variable
+# absente vaut la chaîne vide, donc cette ligne n'active rien par elle-même.
+# Pas de `required-env` : rien ici ne casse quand une variable manque.
+#
+# Aligné sur config/env.manifest.json (`pwa-env sync`).
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  packages: read
+
+jobs:
+  deploy:
+    uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-deploy.yml@v6
+    with:
+      use-base-path: true
+      # LE SEUL INTERRUPTEUR DE LA MESURE D'AUDIENCE, ET IL EST ICI.
+      #
+      # `pwa-deploy.yml` n'injecte QUE ce que l'appelant lui donne : sans
+      # cette ligne, poser la variable de dépôt ne change rien au build et le
+      # bandeau de consentement ne rend rien, faute de clé. Relevé le
+      # 15/09/2026 : zéro dépôt sur vingt la passait.
+      #
+      # Variable absente = chaîne vide = aucune mesure. Elle n'active donc
+      # rien par elle-même : elle rend la variable capable d'agir.
+      build-env: |
+        VITE_BACKEND=${{ vars.VITE_BACKEND }}
+        VITE_POSTHOG_KEY=${{ vars.VITE_POSTHOG_KEY }}
+        VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+        VITE_SUPABASE_ANON_KEY=${{ vars.VITE_SUPABASE_ANON_KEY }}
+        VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
