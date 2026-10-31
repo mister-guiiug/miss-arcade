@@ -2,76 +2,96 @@
  * Les dictionnaires de l'application, une entrée par locale et TOUTES DE MÊME
  * FORME : `createI18n` dérive le type des clés du dictionnaire de repli, et le
  * compilateur refuse ensuite `t('cle.qui.nexiste.pas')`.
- *
- * Deux locales seulement ici. En ajouter une se fait en copiant `fr` et en
- * traduisant : la forme, elle, est vérifiée à la compilation.
- *
- * CE FICHIER NE CONTIENT PAS LES LIBELLÉS DES COMPOSANTS DU SOCLE (« Fermer »,
- * « Réessayer », « Retour »…). Ils vivent dans `react/labels`, en sept langues,
- * et `I18nProvider` pose `LabelsProvider` avec la locale courante tout seul.
- * Les redéclarer ici, c'est le travail que sept apps ont fait dans huit
- * fichiers-pont d'environ quatre cents lignes, avant que le socle ne porte les
- * traductions.
- */
-/**
- * PAS DE `as const` ICI, et c'est délibéré. Il figerait chaque chaîne
- * française comme son PROPRE type littéral, et le dictionnaire anglais devrait
- * alors contenir… les mêmes mots français. La forme est ce qui doit
- * correspondre, pas le contenu.
  */
 const fr = {
   app: {
     name: 'Miss Arcade',
     tagline:
-      'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.',
+      'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots pondérés, messages personnalisés, formulaire leads, utilisable hors ligne.',
   },
   nav: {
-    home: 'Accueil',
+    home: 'Jouer',
+    admin: 'Admin',
     settings: 'Réglages',
     account: 'Compte',
     about: 'À propos',
   },
-  home: {
-    title: 'Notes',
-    loading: 'Chargement des notes',
-    empty: 'Aucune note pour le moment.',
-    emptyHint: 'La première note montrera la persistance versionnée.',
-    add: 'Ajouter',
-    field: 'Nouvelle note',
-    placeholder: 'Ce que je ne veux pas oublier',
-    remove: 'Supprimer',
-    removed: 'Note supprimée',
-    undo: 'Annuler',
-    count: {
-      one: '{count} note',
-      other: '{count} notes',
+  game: {
+    bandit: 'Bandit manchot',
+    roue: 'Roue de la fortune',
+  },
+  play: {
+    loading: 'Chargement du jeu',
+    continue: 'Rejouer',
+  },
+  bandit: {
+    reels: 'Bobines du bandit manchot',
+    spin: 'Lancer',
+    spinning: '…',
+  },
+  wheel: {
+    aria: 'Roue de la fortune',
+    spin: 'Tourner la roue',
+    spinning: '…',
+  },
+  lead: {
+    intro: 'Laissez vos coordonnées pour recevoir votre lot.',
+    prenom: 'Prénom',
+    nom: 'Nom',
+    email: 'E-mail',
+    telephone: 'Téléphone',
+    submit: 'Envoyer',
+    skip: 'Passer',
+  },
+  admin: {
+    title: 'Administration',
+    intro:
+      'Paramétrez le jeu actif, les lots (stock et pondération), les messages et le formulaire leads. Tout reste sur cet appareil — utilisable hors ligne.',
+    gameType: 'Type de jeu',
+    messages: 'Messages',
+    welcome: 'Message d’accueil',
+    win: 'Message de gain',
+    winHint: 'Utilisez {lot} pour afficher le nom du lot.',
+    lose: 'Message de perte',
+    prizes: 'Lots',
+    addPrize: 'Ajouter',
+    newPrize: 'Nouveau lot',
+    removePrize: 'Supprimer le lot',
+    prizeLabel: 'Libellé',
+    weight: 'Poids',
+    stock: 'Stock',
+    stockHint: 'Vide = illimité',
+    symbol: 'Symbole',
+    color: 'Couleur',
+    loseFlag: 'Case perdante (pas de lot)',
+    leads: 'Formulaire leads',
+    leadEnabled: 'Afficher le formulaire après une partie',
+    leadFields: 'Champs à collecter',
+    leadCount: {
+      one: '{count} lead enregistré',
+      other: '{count} leads enregistrés',
     },
-    sync: {
-      refused: {
-        one: '{count} écriture refusée par la base : {error}',
-        other: '{count} écritures refusées par la base : {error}',
-      },
-      retry: 'Réessayer',
-    },
+    clearLeads: 'Effacer les leads',
   },
   settings: {
     title: 'Réglages',
     appearance: 'Apparence',
     language: 'Langue',
-    data: 'Données',
-    export: 'Exporter mes notes',
-    import: 'Importer mes notes',
-    importConfirm: 'Remplacer les notes actuelles ?',
+    data: 'Données du jeu',
+    export: 'Exporter la config et les leads',
+    import: 'Importer',
+    importConfirm: 'Remplacer la configuration actuelle ?',
     importBody:
-      'Le fichier remplacera tout ce qui est sur cet appareil. Exportez d’abord si vous voulez garder l’état actuel.',
+      'Le fichier remplacera lots, messages et leads sur cet appareil. Exportez d’abord si vous voulez garder l’état actuel.',
     imported: {
-      one: '{count} note importée.',
-      other: '{count} notes importées.',
+      one: 'Import réussi ({count} lead).',
+      other: 'Import réussi ({count} leads).',
     },
     importFailed: 'Fichier refusé : {error}',
-    reset: 'Tout effacer',
-    resetConfirm: 'Effacer toutes les notes ?',
-    resetBody: 'Cette action est définitive.',
+    reset: 'Tout réinitialiser',
+    resetConfirm: 'Réinitialiser le jeu ?',
+    resetBody:
+      'Lots, messages et leads reviendront aux valeurs d’exemple. Cette action est définitive.',
     backend: 'Source de données',
     backendLocal: 'Cet appareil seulement',
   },
@@ -92,7 +112,7 @@ const fr = {
     useLink: 'Recevoir un lien plutôt',
     danger: {
       title: 'Zone dangereuse',
-      body: 'Supprimer votre compte efface vos notes, votre profil et le compte lui-même. Rien n’est conservé, et cette action ne s’annule pas.',
+      body: 'Supprimer votre compte efface vos données distantes, votre profil et le compte lui-même. Rien n’est conservé, et cette action ne s’annule pas.',
       action: 'Supprimer mon compte',
       confirmLabel: 'Retapez votre adresse pour confirmer',
       confirmHint: 'L’adresse du compte est {email}.',
@@ -102,67 +122,101 @@ const fr = {
       failed: 'La suppression a échoué : {error}',
     },
   },
-
   about: {
     title: 'À propos',
-    what: 'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.',
+    what: 'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots pondérés, messages personnalisés, formulaire leads, utilisable hors ligne.',
   },
 };
 
 const en: typeof fr = {
   app: {
     name: 'Miss Arcade',
-    // TODO traduire : create-lg-pwa-app a recopié ici la description française.
     tagline:
-      'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.',
+      'Touch games for booths and stores: slot machine and prize wheel, weighted prizes, custom messages, lead form, works offline.',
   },
   nav: {
-    home: 'Home',
+    home: 'Play',
+    admin: 'Admin',
     settings: 'Settings',
     account: 'Account',
     about: 'About',
   },
-  home: {
-    title: 'Notes',
-    loading: 'Loading notes',
-    empty: 'No notes yet.',
-    emptyHint: 'The first note will show versioned persistence at work.',
-    add: 'Add',
-    field: 'New note',
-    placeholder: "What I don't want to forget",
-    remove: 'Delete',
-    removed: 'Note deleted',
-    undo: 'Undo',
-    count: {
-      one: '{count} note',
-      other: '{count} notes',
+  game: {
+    bandit: 'Slot machine',
+    roue: 'Prize wheel',
+  },
+  play: {
+    loading: 'Loading game',
+    continue: 'Play again',
+  },
+  bandit: {
+    reels: 'Slot machine reels',
+    spin: 'Spin',
+    spinning: '…',
+  },
+  wheel: {
+    aria: 'Prize wheel',
+    spin: 'Spin the wheel',
+    spinning: '…',
+  },
+  lead: {
+    intro: 'Leave your details to claim your prize.',
+    prenom: 'First name',
+    nom: 'Last name',
+    email: 'Email',
+    telephone: 'Phone',
+    submit: 'Send',
+    skip: 'Skip',
+  },
+  admin: {
+    title: 'Administration',
+    intro:
+      'Configure the active game, prizes (stock and odds), messages and the lead form. Everything stays on this device — works offline.',
+    gameType: 'Game type',
+    messages: 'Messages',
+    welcome: 'Welcome message',
+    win: 'Win message',
+    winHint: 'Use {lot} to show the prize name.',
+    lose: 'Lose message',
+    prizes: 'Prizes',
+    addPrize: 'Add',
+    newPrize: 'New prize',
+    removePrize: 'Remove prize',
+    prizeLabel: 'Label',
+    weight: 'Weight',
+    stock: 'Stock',
+    stockHint: 'Empty = unlimited',
+    symbol: 'Symbol',
+    color: 'Color',
+    loseFlag: 'Losing slot (no prize)',
+    leads: 'Lead form',
+    leadEnabled: 'Show the form after a round',
+    leadFields: 'Fields to collect',
+    leadCount: {
+      one: '{count} lead saved',
+      other: '{count} leads saved',
     },
-    sync: {
-      refused: {
-        one: '{count} write refused by the database: {error}',
-        other: '{count} writes refused by the database: {error}',
-      },
-      retry: 'Retry',
-    },
+    clearLeads: 'Clear leads',
   },
   settings: {
     title: 'Settings',
     appearance: 'Appearance',
     language: 'Language',
-    data: 'Data',
-    export: 'Export my notes',
-    import: 'Import my notes',
-    importConfirm: 'Replace the current notes?',
+    data: 'Game data',
+    export: 'Export config and leads',
+    import: 'Import',
+    importConfirm: 'Replace the current configuration?',
     importBody:
-      'The file will replace everything on this device. Export first if you want to keep the current state.',
+      'The file will replace prizes, messages and leads on this device. Export first if you want to keep the current state.',
     imported: {
-      one: '{count} note imported.',
-      other: '{count} notes imported.',
+      one: 'Import OK ({count} lead).',
+      other: 'Import OK ({count} leads).',
     },
     importFailed: 'File rejected: {error}',
-    reset: 'Erase everything',
-    resetConfirm: 'Erase all notes?',
-    resetBody: 'This cannot be undone.',
+    reset: 'Reset everything',
+    resetConfirm: 'Reset the game?',
+    resetBody:
+      'Prizes, messages and leads will return to the demo defaults. This cannot be undone.',
     backend: 'Data source',
     backendLocal: 'This device only',
   },
@@ -183,7 +237,7 @@ const en: typeof fr = {
     useLink: 'Send me a link instead',
     danger: {
       title: 'Danger zone',
-      body: 'Deleting your account erases your notes, your profile and the account itself. Nothing is kept, and this cannot be undone.',
+      body: 'Deleting your account erases your remote data, your profile and the account itself. Nothing is kept, and this cannot be undone.',
       action: 'Delete my account',
       confirmLabel: 'Type your address again to confirm',
       confirmHint: 'The account address is {email}.',
@@ -193,11 +247,9 @@ const en: typeof fr = {
       failed: 'Deletion failed: {error}',
     },
   },
-
   about: {
     title: 'About',
-    // TODO traduire : create-lg-pwa-app a recopié ici la description française.
-    what: 'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.',
+    what: 'Touch games for booths and stores: slot machine and prize wheel, weighted prizes, custom messages, lead form, works offline.',
   },
 };
 

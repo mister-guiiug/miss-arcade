@@ -48,7 +48,7 @@ export default defineConfig(({ command }) => {
     // un port libre à sa naissance — le générateur récrit ce repli.
     // `strictPort` : un port pris fait échouer le démarrage, au lieu de glisser
     // en silence vers un autre que `.claude/launch.json` ne connaît pas.
-    server: { port: devPortOf(APP_ID, 5219), strictPort: true },
+    server: { port: devPortOf(APP_ID, 5220), strictPort: true },
     build: { sourcemap: true },
     plugins: [
       react(),

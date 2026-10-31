@@ -7,7 +7,7 @@
   "engines": {
     "node": ">=24.21.0"
   },
-  "description": "Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.",
+  "description": "Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots pondérés, messages personnalisés, formulaire leads, utilisable hors ligne.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && pwa-bundle-budget && pwa-doctor --strict",
