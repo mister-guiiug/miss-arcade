@@ -107,11 +107,13 @@ export function Shell() {
     '/compte': t('account.title'),
     '/a-propos': t('about.title'),
   };
+  const title =
+    pathname.startsWith('/j/') ? t('app.name') : (titles[pathname] ?? t('app.name'));
 
   return (
     <AppShell
-      title={titles[pathname] ?? t('app.name')}
-      backHref={pathname === '/' ? undefined : '/'}
+      title={title}
+      backHref={pathname === '/' || pathname.startsWith('/j/') ? undefined : '/'}
       linkComponent={Link}
       hrefProp="to"
       navItems={nav}
@@ -159,6 +161,7 @@ export function Shell() {
     >
       <Routes>
         <Route path="/" element={<HomeScreen />} />
+        <Route path="/j/:slug" element={<HomeScreen />} />
         <Route path="/admin" element={<AdminScreen />} />
         <Route path="/reglages" element={<SettingsScreen />} />
         <Route path="/compte" element={<AccountScreen />} />

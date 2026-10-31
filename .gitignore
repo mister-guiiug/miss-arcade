@@ -20,3 +20,5 @@ coverage/
 # Artefacts Playwright — rapports, traces, vidéos, captures d'échec.
 playwright-report/
 test-results/
+
+supabase/.temp/

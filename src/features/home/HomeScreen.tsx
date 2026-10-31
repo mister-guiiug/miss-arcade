@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { AppFooter } from '@mister-guiiug/dev-pwa-config/react/app-footer';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
@@ -9,25 +10,55 @@ import { BanditMachine } from '../arcade/BanditMachine.tsx';
 import { WheelGame } from '../arcade/WheelGame.tsx';
 
 /**
- * Accueil = borne de jeu. Le type actif (bandit / roue) vient de l'admin ;
- * la tagline et le pied de page restent — règle famille du 06/09/2026.
+ * Accueil public = borne de jeu. Pas d'auth. Branding (fond + logo) par tenant.
+ * `/` → demo ; `/j/:slug` → tenant publié.
  */
 export function HomeScreen() {
   const { t } = useI18n();
+  const { slug } = useParams<{ slug?: string }>();
   const ready = useArcade(s => s.ready);
   const error = useArcade(s => s.error);
   const load = useArcade(s => s.load);
   const activeGame = useArcade(s => s.snapshot.activeGame);
+  const snapshot = useArcade(s => s.snapshot);
+  const tenant = useArcade(s => s.tenant);
 
   useEffect(() => {
-    if (!ready) load();
-  }, [ready, load]);
+    void load(slug ?? 'demo');
+  }, [load, slug]);
+
+  const wallpaper =
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches
+      ? snapshot.wallpaperMobile || snapshot.wallpaperDesktop
+      : snapshot.wallpaperDesktop || snapshot.wallpaperMobile;
 
   return (
-    <>
-      <p className="mt-0 mb-6" style={{ color: 'var(--dwc-text-soft)' }}>
+    <div
+      className="arcade-play-surface"
+      style={
+        wallpaper
+          ? {
+              backgroundImage: `linear-gradient(rgb(20 32 28 / 55%), rgb(20 32 28 / 70%)), url(${wallpaper})`,
+            }
+          : undefined
+      }
+    >
+      {snapshot.logoUrl ? (
+        <img
+          src={snapshot.logoUrl}
+          alt=""
+          className="arcade-play-logo"
+        />
+      ) : null}
+
+      <p className="mt-0 mb-2" style={{ color: 'var(--dwc-text-soft)' }}>
         {t('app.tagline')}
       </p>
+      {tenant ? (
+        <p className="mt-0 mb-4 text-sm" style={{ color: 'var(--dwc-text-soft)' }}>
+          {tenant.name}
+        </p>
+      ) : null}
 
       <h2 className="mt-0 mb-4 text-lg font-semibold">
         {activeGame === 'roue' ? t('game.roue') : t('game.bandit')}
@@ -44,6 +75,6 @@ export function HomeScreen() {
       )}
 
       <AppFooter repoUrl={REPO_URL} issues className="mt-8" />
-    </>
+    </div>
   );
 }

@@ -31,22 +31,23 @@ export function WheelGame() {
 
   const play = () => {
     if (spinning || prizes.length === 0) return;
-    const prize = spin();
-    if (!prize) return;
-    const index = prizes.findIndex(p => p.id === prize.id);
-    const slice = 360 / prizes.length;
-    // Centre de la part, plus tours complets pour le spectacle.
-    const target =
-      360 * 5 +
-      (360 - (index * slice + slice / 2)) +
-      (Math.random() * slice * 0.3 - slice * 0.15);
-    setSpinning(true);
-    setPhase('spin');
-    setRotation(prev => prev + target);
-    window.setTimeout(() => {
-      setSpinning(false);
-      setPhase('result');
-    }, SPIN_MS);
+    void (async () => {
+      const prize = await spin();
+      if (!prize) return;
+      const index = prizes.findIndex(p => p.id === prize.id);
+      const slice = 360 / prizes.length;
+      const target =
+        360 * 5 +
+        (360 - (index * slice + slice / 2)) +
+        (Math.random() * slice * 0.3 - slice * 0.15);
+      setSpinning(true);
+      setPhase('spin');
+      setRotation(prev => prev + target);
+      window.setTimeout(() => {
+        setSpinning(false);
+        setPhase('result');
+      }, SPIN_MS);
+    })();
   };
 
   const reset = () => {

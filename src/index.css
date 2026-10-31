@@ -226,3 +226,79 @@ body {
     transition: none !important;
   }
 }
+
+/* —— Borne publique + branding —— */
+.arcade-play-surface {
+  margin: -0.5rem -0.25rem 0;
+  padding: 1rem 0.25rem 0;
+  border-radius: 1rem;
+  background-size: cover;
+  background-position: center;
+  min-height: 60vh;
+}
+
+.arcade-play-logo {
+  display: block;
+  max-height: 3.5rem;
+  max-width: 12rem;
+  margin: 0 auto 1rem;
+  object-fit: contain;
+}
+
+.arcade-branding-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.arcade-preview {
+  margin: 0;
+  flex: 1 1 10rem;
+}
+
+.arcade-preview figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--dwc-text-soft);
+  text-align: center;
+}
+
+.arcade-preview-frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--dwc-border);
+  background:
+    linear-gradient(160deg, #243832, #0f1a16);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.arcade-preview--desktop .arcade-preview-frame {
+  aspect-ratio: 16 / 9;
+}
+
+.arcade-preview--mobile .arcade-preview-frame {
+  aspect-ratio: 9 / 16;
+  max-width: 9rem;
+  margin-inline: auto;
+}
+
+.arcade-preview-logo {
+  position: absolute;
+  top: 0.5rem;
+  max-height: 1.75rem;
+  max-width: 40%;
+  object-fit: contain;
+}
+
+.arcade-preview-caption {
+  padding: 0.5rem;
+  color: #fff;
+  font-size: 0.75rem;
+  text-align: center;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 60%);
+}

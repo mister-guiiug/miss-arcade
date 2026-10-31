@@ -136,7 +136,7 @@ export function SettingsScreen() {
         title={t('settings.resetConfirm')}
         message={t('settings.resetBody')}
         onConfirm={() => {
-          clearAll();
+          void clearAll();
           setConfirming(false);
         }}
         onCancel={() => setConfirming(false)}

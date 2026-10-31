@@ -69,7 +69,9 @@ select set_eq(
     -- Aides de la RLS : elles ne rendent que ce qui concerne l'appelant, rien
     -- pour anon
     'has_role',
-    'is_admin'
+    'is_admin',
+    -- Tirage public pondéré : lit/écrit les lots du tenant publié uniquement
+    'arcade_public_spin'
   ],
   'les fonctions SECURITY DEFINER exécutables par anon sont exactement la liste relue'
 );

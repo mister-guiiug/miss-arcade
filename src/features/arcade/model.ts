@@ -41,6 +41,13 @@ export const leadSchema = z.object({
 });
 export type Lead = z.infer<typeof leadSchema>;
 
+export const brandingSchema = z.object({
+  wallpaperDesktop: z.string().max(2000).nullable(),
+  wallpaperMobile: z.string().max(2000).nullable(),
+  logoUrl: z.string().max(2000).nullable(),
+});
+export type Branding = z.infer<typeof brandingSchema>;
+
 export const arcadeSchema = z.object({
   activeGame: gameTypeSchema,
   welcomeMessage: z.string().max(500),
@@ -50,6 +57,9 @@ export const arcadeSchema = z.object({
   leadFields: z.array(leadFieldSchema),
   prizes: z.array(prizeSchema).min(1).max(12),
   leads: z.array(leadSchema),
+  wallpaperDesktop: z.string().max(2000).nullable().default(null),
+  wallpaperMobile: z.string().max(2000).nullable().default(null),
+  logoUrl: z.string().max(2000).nullable().default(null),
 });
 export type ArcadeSnapshot = z.infer<typeof arcadeSchema>;
 
@@ -101,6 +111,9 @@ export function defaultArcade(): ArcadeSnapshot {
       },
     ],
     leads: [],
+    wallpaperDesktop: null,
+    wallpaperMobile: null,
+    logoUrl: null,
   };
 }
 
