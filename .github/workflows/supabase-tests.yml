@@ -31,3 +31,8 @@ permissions:
 jobs:
   pgtap:
     uses: mister-guiiug/dev-pwa-config/.github/workflows/pwa-supabase-test.yml@v6
+    with:
+      # La liste par défaut du réutilisable, MOINS `storage-api` : la migration
+      # 0007 écrit dans `storage.buckets`, que seul ce service crée. `imgproxy`
+      # (transformations d'images) reste exclu, le stockage n'en a pas besoin.
+      exclude: 'realtime,imgproxy,studio,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta,postgrest,kong'
