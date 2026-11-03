@@ -28,7 +28,8 @@ export function HomeScreen() {
   }, [load, slug]);
 
   const wallpaper =
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches
+    typeof window !== 'undefined' &&
+    window.matchMedia('(max-width: 640px)').matches
       ? snapshot.wallpaperMobile || snapshot.wallpaperDesktop
       : snapshot.wallpaperDesktop || snapshot.wallpaperMobile;
 
@@ -44,18 +45,17 @@ export function HomeScreen() {
       }
     >
       {snapshot.logoUrl ? (
-        <img
-          src={snapshot.logoUrl}
-          alt=""
-          className="arcade-play-logo"
-        />
+        <img src={snapshot.logoUrl} alt="" className="arcade-play-logo" />
       ) : null}
 
       <p className="mt-0 mb-2" style={{ color: 'var(--dwc-text-soft)' }}>
         {t('app.tagline')}
       </p>
       {tenant ? (
-        <p className="mt-0 mb-4 text-sm" style={{ color: 'var(--dwc-text-soft)' }}>
+        <p
+          className="mt-0 mb-4 text-sm"
+          style={{ color: 'var(--dwc-text-soft)' }}
+        >
           {tenant.name}
         </p>
       ) : null}

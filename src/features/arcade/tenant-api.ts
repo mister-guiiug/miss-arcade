@@ -58,10 +58,7 @@ type ArcadeClient = {
 
 type ArcadeQuery = {
   eq: (column: string, value: string) => ArcadeQuery;
-  order: (
-    column: string,
-    options?: { ascending: boolean }
-  ) => ArcadeQuery;
+  order: (column: string, options?: { ascending: boolean }) => ArcadeQuery;
   limit: (n: number) => ArcadeQuery;
   maybeSingle: () => Promise<{
     data: unknown;
@@ -85,7 +82,9 @@ async function db(): Promise<ArcadeClient> {
   return (await supabase.getClient()) as unknown as ArcadeClient;
 }
 
-export async function fetchTenantBySlug(slug: string): Promise<TenantInfo | null> {
+export async function fetchTenantBySlug(
+  slug: string
+): Promise<TenantInfo | null> {
   if (!remote()) return { id: 'local', slug: 'demo', name: 'Démo locale' };
   const client = await db();
   const { data, error } = await client
@@ -108,7 +107,11 @@ export async function fetchPublicArcade(
   }
   const client = await db();
   const [configRes, prizesRes] = await Promise.all([
-    client.from('arcade_configs').select('*').eq('tenant_id', tenantId).single(),
+    client
+      .from('arcade_configs')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .single(),
     client
       .from('arcade_prizes')
       .select('*')
@@ -229,10 +232,7 @@ export async function publicSpin(slug: string): Promise<Prize | null> {
   };
 }
 
-export async function insertLead(
-  tenantId: string,
-  lead: Lead
-): Promise<void> {
+export async function insertLead(tenantId: string, lead: Lead): Promise<void> {
   if (!remote()) return;
   const client = await db();
   const { error } = await client.from('arcade_leads').insert({
@@ -276,7 +276,10 @@ export async function listTenants(): Promise<TenantInfo[]> {
   return (data ?? []) as TenantInfo[];
 }
 
-export async function createTenant(slug: string, name: string): Promise<TenantInfo> {
+export async function createTenant(
+  slug: string,
+  name: string
+): Promise<TenantInfo> {
   if (!remote()) throw new Error('création de tenant hors ligne indisponible');
   const client = await db();
   const { data, error } = await client

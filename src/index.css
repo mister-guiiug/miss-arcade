@@ -270,8 +270,7 @@ body {
   place-items: center;
   border-radius: 0.75rem;
   border: 1px solid var(--dwc-border);
-  background:
-    linear-gradient(160deg, #243832, #0f1a16);
+  background: linear-gradient(160deg, #243832, #0f1a16);
   background-size: cover;
   background-position: center;
   overflow: hidden;
