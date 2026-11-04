@@ -35,7 +35,10 @@
  * contraste.
  */
 @theme {
-  --color-primary: #1f8a70;
+  /* #1d826a et non #1f8a70 : 4,72:1 avec le blanc, contre 4,26:1 (WCAG 1.4.3, seuil
+     4,5:1). axe le mesurait sur les boutons, la navigation du bas et les pastilles du
+     socle, qui peignent `--dwc-primary-contrast` sur `--dwc-primary`. */
+  --color-primary: #1d826a;
   --color-primary-soft: #d5efe8;
   --radius-card: 0.875rem;
 }
@@ -51,7 +54,7 @@
   --dwc-text-soft: #4f635c;
   --dwc-border: #c9d6d0;
   --dwc-border-strong: #6e7f78;
-  --dwc-primary: #1f8a70;
+  --dwc-primary: #1d826a; /* même teinte que --color-primary, voir @theme */
   --dwc-primary-contrast: #ffffff;
   --dwc-danger: #b3261e;
   --dwc-success: #1b6b3a;
