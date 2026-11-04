@@ -33,30 +33,32 @@ export function BanditMachine() {
 
   const play = () => {
     if (spinning) return;
-    const prize = spin();
-    if (!prize) return;
-    setSpinning(true);
-    setPhase('spin');
+    void (async () => {
+      const prize = await spin();
+      if (!prize) return;
+      setSpinning(true);
+      setPhase('spin');
 
-    const tick = window.setInterval(() => {
-      setFaces([
-        randomSymbol(prizes),
-        randomSymbol(prizes),
-        randomSymbol(prizes),
-      ]);
-    }, 80);
+      const tick = window.setInterval(() => {
+        setFaces([
+          randomSymbol(prizes),
+          randomSymbol(prizes),
+          randomSymbol(prizes),
+        ]);
+      }, 80);
 
-    window.setTimeout(() => {
-      window.clearInterval(tick);
-      const sym = prize.symbol;
-      setFaces(
-        prize.lose
-          ? [randomSymbol(prizes, sym), sym, randomSymbol(prizes, sym)]
-          : [sym, sym, sym]
-      );
-      setSpinning(false);
-      setPhase('result');
-    }, SPIN_MS);
+      window.setTimeout(() => {
+        window.clearInterval(tick);
+        const sym = prize.symbol;
+        setFaces(
+          prize.lose
+            ? [randomSymbol(prizes, sym), sym, randomSymbol(prizes, sym)]
+            : [sym, sym, sym]
+        );
+        setSpinning(false);
+        setPhase('result');
+      }, SPIN_MS);
+    })();
   };
 
   const reset = () => {

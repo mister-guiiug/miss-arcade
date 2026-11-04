@@ -34,8 +34,13 @@ enabled = false
 [studio]
 enabled = false
 
+# Activé pour la pile jetable des tests pgTAP : la migration 0007 crée le bucket
+# du branding (`insert into storage.buckets`) et ses politiques sur
+# `storage.objects`. Sans le service de stockage, ce schéma n'existe pas et la
+# migration échoue au démarrage. Le workflow `supabase-tests.yml` retire
+# `storage-api` de sa liste d'exclusion pour la même raison.
 [storage]
-enabled = false
+enabled = true
 
 [auth]
 enabled = true

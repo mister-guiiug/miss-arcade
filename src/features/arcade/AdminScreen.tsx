@@ -8,6 +8,9 @@ import { createId } from '@mister-guiiug/dev-pwa-config/id';
 import { useI18n } from '../../i18n/index.ts';
 import { useArcade } from './store.ts';
 import type { GameType, LeadField, Prize } from './model.ts';
+import { BrandingPanel } from './BrandingPanel.tsx';
+import { SuperAdminPanel } from './SuperAdminPanel.tsx';
+import { RequireAdmin } from './RequireAdmin.tsx';
 
 const ALL_FIELDS: LeadField[] = ['prenom', 'nom', 'email', 'telephone'];
 const COLORS = [
@@ -35,7 +38,7 @@ export function AdminScreen() {
   const clearLeads = useArcade(s => s.clearLeads);
 
   useEffect(() => {
-    if (!ready) load();
+    if (!ready) void load();
   }, [ready, load]);
 
   if (!ready) return null;
@@ -45,7 +48,7 @@ export function AdminScreen() {
     const leadFields = has
       ? snapshot.leadFields.filter(f => f !== field)
       : [...snapshot.leadFields, field];
-    updateConfig({ leadFields });
+    void updateConfig({ leadFields });
   };
 
   const addPrize = () => {
@@ -58,121 +61,131 @@ export function AdminScreen() {
       symbol: '★',
       lose: false,
     };
-    upsertPrize(prize);
+    void upsertPrize(prize);
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="m-0" style={{ color: 'var(--dwc-text-soft)' }}>
-        {t('admin.intro')}
-      </p>
+    <RequireAdmin>
+      <div className="flex flex-col gap-4">
+        <p className="m-0" style={{ color: 'var(--dwc-text-soft)' }}>
+          {t('admin.intro')}
+        </p>
 
-      <Card>
-        <CardHeader title={t('admin.gameType')} />
-        <SegmentedControl
-          value={snapshot.activeGame}
-          onChange={value => setActiveGame(value as GameType)}
-          ariaLabel={t('admin.gameType')}
-          options={[
-            { value: 'bandit', label: t('game.bandit') },
-            { value: 'roue', label: t('game.roue') },
-          ]}
-        />
-      </Card>
+        <SuperAdminPanel />
+        <BrandingPanel />
 
-      <Card>
-        <CardHeader title={t('admin.messages')} />
-        <div className="flex flex-col gap-3">
-          <TextField
-            label={t('admin.welcome')}
-            value={snapshot.welcomeMessage}
-            onChange={e => updateConfig({ welcomeMessage: e.target.value })}
+        <Card>
+          <CardHeader title={t('admin.gameType')} />
+          <SegmentedControl
+            value={snapshot.activeGame}
+            onChange={value => void setActiveGame(value as GameType)}
+            ariaLabel={t('admin.gameType')}
+            options={[
+              { value: 'bandit', label: t('game.bandit') },
+              { value: 'roue', label: t('game.roue') },
+            ]}
           />
-          <TextField
-            label={t('admin.win')}
-            hint={t('admin.winHint')}
-            value={snapshot.winMessage}
-            onChange={e => updateConfig({ winMessage: e.target.value })}
-          />
-          <TextField
-            label={t('admin.lose')}
-            value={snapshot.loseMessage}
-            onChange={e => updateConfig({ loseMessage: e.target.value })}
-          />
-        </div>
-      </Card>
+        </Card>
 
-      <Card>
-        <CardHeader
-          title={t('admin.prizes')}
-          action={
-            <Button variant="ghost" size="sm" onClick={addPrize}>
-              <Plus size={16} aria-hidden="true" />
-              {t('admin.addPrize')}
-            </Button>
-          }
-        />
-        <ul className="m-0 flex list-none flex-col gap-4 p-0">
-          {snapshot.prizes.map(prize => (
-            <PrizeEditor
-              key={prize.id}
-              prize={prize}
-              canRemove={snapshot.prizes.length > 1}
-              onChange={upsertPrize}
-              onRemove={() => removePrize(prize.id)}
-            />
-          ))}
-        </ul>
-      </Card>
-
-      <Card>
-        <CardHeader title={t('admin.leads')} />
-        <div className="flex flex-col gap-3">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={snapshot.leadFormEnabled}
+        <Card>
+          <CardHeader title={`1. ${t('admin.messages')}`} />
+          <div className="flex flex-col gap-3">
+            <TextField
+              label={t('admin.welcome')}
+              value={snapshot.welcomeMessage}
               onChange={e =>
-                updateConfig({ leadFormEnabled: e.target.checked })
+                void updateConfig({ welcomeMessage: e.target.value })
               }
             />
-            {t('admin.leadEnabled')}
-          </label>
-          {snapshot.leadFormEnabled ? (
-            <fieldset className="m-0 border-0 p-0">
-              <legend className="mb-2 text-sm font-medium">
-                {t('admin.leadFields')}
-              </legend>
-              <div className="flex flex-wrap gap-3">
-                {ALL_FIELDS.map(field => (
-                  <label
-                    key={field}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={snapshot.leadFields.includes(field)}
-                      onChange={() => toggleField(field)}
-                    />
-                    {t(`lead.${field}` as 'lead.prenom')}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ) : null}
-          <p className="m-0 text-sm" style={{ color: 'var(--dwc-text-soft)' }}>
-            {fmt.plural(snapshot.leads.length, m.admin.leadCount, {
-              count: snapshot.leads.length,
-            })}
-          </p>
-          {snapshot.leads.length > 0 ? (
-            <Button variant="outline" onClick={() => clearLeads()}>
-              {t('admin.clearLeads')}
-            </Button>
-          ) : null}
-        </div>
-      </Card>
-    </div>
+            <TextField
+              label={t('admin.win')}
+              hint={t('admin.winHint')}
+              value={snapshot.winMessage}
+              onChange={e => void updateConfig({ winMessage: e.target.value })}
+            />
+            <TextField
+              label={t('admin.lose')}
+              value={snapshot.loseMessage}
+              onChange={e => void updateConfig({ loseMessage: e.target.value })}
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader
+            title={`2. ${t('admin.prizes')}`}
+            action={
+              <Button variant="ghost" size="sm" onClick={addPrize}>
+                <Plus size={16} aria-hidden="true" />
+                {t('admin.addPrize')}
+              </Button>
+            }
+          />
+          <ul className="m-0 flex list-none flex-col gap-4 p-0">
+            {snapshot.prizes.map(prize => (
+              <PrizeEditor
+                key={prize.id}
+                prize={prize}
+                canRemove={snapshot.prizes.length > 1}
+                onChange={p => void upsertPrize(p)}
+                onRemove={() => void removePrize(prize.id)}
+              />
+            ))}
+          </ul>
+        </Card>
+
+        <Card>
+          <CardHeader title={t('admin.leads')} />
+          <div className="flex flex-col gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={snapshot.leadFormEnabled}
+                onChange={e =>
+                  void updateConfig({ leadFormEnabled: e.target.checked })
+                }
+              />
+              {t('admin.leadEnabled')}
+            </label>
+            {snapshot.leadFormEnabled ? (
+              <fieldset className="m-0 border-0 p-0">
+                <legend className="mb-2 text-sm font-medium">
+                  {t('admin.leadFields')}
+                </legend>
+                <div className="flex flex-wrap gap-3">
+                  {ALL_FIELDS.map(field => (
+                    <label
+                      key={field}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={snapshot.leadFields.includes(field)}
+                        onChange={() => toggleField(field)}
+                      />
+                      {t(`lead.${field}` as 'lead.prenom')}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ) : null}
+            <p
+              className="m-0 text-sm"
+              style={{ color: 'var(--dwc-text-soft)' }}
+            >
+              {fmt.plural(snapshot.leads.length, m.admin.leadCount, {
+                count: snapshot.leads.length,
+              })}
+            </p>
+            {snapshot.leads.length > 0 ? (
+              <Button variant="outline" onClick={() => void clearLeads()}>
+                {t('admin.clearLeads')}
+              </Button>
+            ) : null}
+          </div>
+        </Card>
+      </div>
+    </RequireAdmin>
   );
 }
 
