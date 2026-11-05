@@ -76,6 +76,17 @@ export default defineConfig(({ command }) => {
         // l'échec ne se verrait qu'en console, sur le site déployé, une fois
         // le consentement donné.
         analytics: true,
+        // LES HÔTES DE SUPABASE, que l'app publiée appelle depuis qu'elle est
+        // en mode Supabase. Relevé en production le 05/11/2026 : six refus CSP
+        // sur `<projet>.supabase.co` au premier chargement, et les tenants,
+        // les lots et les leads ne passaient pas — l'app tournait sur ses
+        // valeurs de démonstration, MÊME EN LIGNE, sans rien dire d'autre
+        // qu'une ligne de console. `connect` : PostgREST, l'auth, le Storage
+        // et le temps réel (`wss`) ; `img` : les fonds et le logo du Storage
+        // (`BrandingPanel`, `HomeScreen`). Les options REMPLACENT les défauts
+        // du greffon : on les redonne en entier ; PostHog s'y ajoute seul.
+        connectSrc: ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co'],
       }),
 
       // Repli SPA : sans `404.html`, rafraîchir un lien profond sert la page
