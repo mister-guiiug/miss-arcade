@@ -221,3 +221,88 @@ test.describe('@critical le cadre', () => {
     await expect(page.getByRole('link', { name: 'Play' })).toBeVisible();
   });
 });
+
+/*
+ * LA CSP LAISSE PASSER SUPABASE — éprouvé par le navigateur, pas relu.
+ *
+ * Relevé en production le 05/11/2026 : `connect-src` ne nommait que PostHog,
+ * et les six appels du premier chargement vers le projet Supabase étaient
+ * refusés. Rien ne le disait, hors une ligne de console : l'app retombait sur
+ * ses valeurs de démonstration, même en ligne. La suite e2e tourne en mode
+ * local, sans projet : elle ne pouvait pas le voir.
+ *
+ * Le projet est ici un hôte FACTICE, servi par `page.route` : la CSP tranche
+ * dans la page, AVANT que la requête parte — un appel refusé n'atteint jamais
+ * la route et rejette en `TypeError`. Le service worker est écarté pour que
+ * rien d'autre que la page ne réponde.
+ */
+test.describe('@critical la CSP et Supabase', () => {
+  test.use({ serviceWorkers: 'block' });
+
+  const PROJET = 'https://exemple-e2e.supabase.co';
+  // Un PNG d'un pixel : le plus petit fichier qu'un `<img>` accepte.
+  const PIXEL = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+    'base64'
+  );
+
+  test('un appel au projet, son temps réel et une image de son Storage passent', async ({
+    page,
+  }) => {
+    await page.route(`${PROJET}/rest/v1/**`, route =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: '[]',
+      })
+    );
+    await page.route(`${PROJET}/storage/v1/**`, route =>
+      route.fulfill({ status: 200, contentType: 'image/png', body: PIXEL })
+    );
+    await page.goto('/');
+
+    // Le temps réel n'a pas de route à servir : on lit le refus lui-même,
+    // tel que la page le signale. L'hôte n'existe pas, la socket échoue —
+    // ce qui compte, c'est qu'elle ait le droit de partir.
+    const refusSocket = await page.evaluate(
+      url =>
+        new Promise<string[]>(resolve => {
+          const refus: string[] = [];
+          document.addEventListener('securitypolicyviolation', e => {
+            refus.push(`${e.violatedDirective} ${e.blockedURI}`);
+          });
+          try {
+            const socket = new WebSocket(url);
+            setTimeout(() => socket.close(), 500);
+          } catch (erreur) {
+            refus.push(String(erreur));
+          }
+          setTimeout(() => resolve(refus), 600);
+        }),
+      `${PROJET.replace('https:', 'wss:')}/realtime/v1/websocket`
+    );
+    expect(refusSocket).toEqual([]);
+
+    const appel = await page.evaluate(async url => {
+      try {
+        return (await fetch(url)).status;
+      } catch (erreur) {
+        return String(erreur);
+      }
+    }, `${PROJET}/rest/v1/tenants`);
+    expect(appel).toBe(200);
+
+    const image = await page.evaluate(
+      url =>
+        new Promise<string>(resolve => {
+          const img = new Image();
+          img.onload = () => resolve('chargée');
+          img.onerror = () => resolve('refusée');
+          img.src = url;
+        }),
+      `${PROJET}/storage/v1/object/public/branding/logo.png`
+    );
+    expect(image).toBe('chargée');
+  });
+});
