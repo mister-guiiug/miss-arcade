@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * Smoke Miss Arcade : bornes de jeu, admin, navigation, export.
@@ -235,11 +235,40 @@ test.describe('@critical le cadre', () => {
  * dans la page, AVANT que la requête parte — un appel refusé n'atteint jamais
  * la route et rejette en `TypeError`. Le service worker est écarté pour que
  * rien d'autre que la page ne réponde.
+ *
+ * LE PROJET NOMMÉ, ET LUI SEUL. Depuis le socle 6.32 (#12), la politique
+ * n'ouvre plus `*.supabase.co`, qui laissait passer TOUS les projets du
+ * monde : `cspPlugin` lit `VITE_SUPABASE_URL` et n'ouvre que cette origine.
+ * Le build e2e la pose sur `PROJET` (playwright.config.ts), comme le
+ * déploiement pose le vrai. Le second test tient l'autre moitié : un projet
+ * qui n'est pas le nôtre est refusé, et un retour du joker le ferait tomber.
  */
 test.describe('@critical la CSP et Supabase', () => {
   test.use({ serviceWorkers: 'block' });
 
+  // La même valeur que `VITE_SUPABASE_URL` dans playwright.config.ts.
   const PROJET = 'https://exemple-e2e.supabase.co';
+  const AUTRE_PROJET = 'https://autre-projet-e2e.supabase.co';
+
+  /** Les refus que la page signale en ouvrant une socket vers `url`. */
+  const refusDeSocket = (page: Page, url: string) =>
+    page.evaluate(
+      cible =>
+        new Promise<string[]>(resolve => {
+          const refus: string[] = [];
+          document.addEventListener('securitypolicyviolation', e => {
+            refus.push(`${e.violatedDirective} ${e.blockedURI}`);
+          });
+          try {
+            const socket = new WebSocket(cible);
+            setTimeout(() => socket.close(), 500);
+          } catch (erreur) {
+            refus.push(String(erreur));
+          }
+          setTimeout(() => resolve(refus), 600);
+        }),
+      url
+    );
   // Un PNG d'un pixel : le plus petit fichier qu'un `<img>` accepte.
   const PIXEL = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
@@ -265,21 +294,8 @@ test.describe('@critical la CSP et Supabase', () => {
     // Le temps réel n'a pas de route à servir : on lit le refus lui-même,
     // tel que la page le signale. L'hôte n'existe pas, la socket échoue —
     // ce qui compte, c'est qu'elle ait le droit de partir.
-    const refusSocket = await page.evaluate(
-      url =>
-        new Promise<string[]>(resolve => {
-          const refus: string[] = [];
-          document.addEventListener('securitypolicyviolation', e => {
-            refus.push(`${e.violatedDirective} ${e.blockedURI}`);
-          });
-          try {
-            const socket = new WebSocket(url);
-            setTimeout(() => socket.close(), 500);
-          } catch (erreur) {
-            refus.push(String(erreur));
-          }
-          setTimeout(() => resolve(refus), 600);
-        }),
+    const refusSocket = await refusDeSocket(
+      page,
       `${PROJET.replace('https:', 'wss:')}/realtime/v1/websocket`
     );
     expect(refusSocket).toEqual([]);
@@ -304,5 +320,33 @@ test.describe('@critical la CSP et Supabase', () => {
       `${PROJET}/storage/v1/object/public/branding/logo.png`
     );
     expect(image).toBe('chargée');
+  });
+
+  test('un autre projet Supabase est refusé', async ({ page }) => {
+    // Servi s'il passait : un refus ne peut donc venir que de la CSP.
+    await page.route(`${AUTRE_PROJET}/**`, route =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: '[]',
+      })
+    );
+    await page.goto('/');
+
+    const refusSocket = await refusDeSocket(
+      page,
+      `${AUTRE_PROJET.replace('https:', 'wss:')}/realtime/v1/websocket`
+    );
+    expect(refusSocket.join(' ')).toContain('connect-src');
+
+    const appel = await page.evaluate(async url => {
+      try {
+        return (await fetch(url)).status;
+      } catch (erreur) {
+        return String(erreur);
+      }
+    }, `${AUTRE_PROJET}/rest/v1/tenants`);
+    expect(appel).toMatch(/TypeError/);
   });
 });
