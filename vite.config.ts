@@ -85,8 +85,8 @@ export default defineConfig(({ command }) => {
         // et le temps réel (`wss`) ; `img` : les fonds et le logo du Storage
         // (`BrandingPanel`, `HomeScreen`). Les options REMPLACENT les défauts
         // du greffon : on les redonne en entier ; PostHog s'y ajoute seul.
-        connectSrc: ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co'],
-        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co'],
+        connectSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'blob:'],
       }),
 
       // Repli SPA : sans `404.html`, rafraîchir un lien profond sert la page
