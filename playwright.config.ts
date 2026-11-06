@@ -11,6 +11,16 @@ import { definePwaPlaywrightConfig } from '@mister-guiiug/dev-pwa-config/playwri
  *
  * `VITE_BASE_PATH=/` neutralise le chemin GitHub Pages le temps du test, et le
  * port 4173 évite la collision avec un serveur de développement.
+ *
+ * `VITE_SUPABASE_URL` NOMME UN PROJET FACTICE, celui que vise l'e2e « la CSP
+ * et Supabase ». Depuis le socle 6.32 (#12), `cspPlugin` n'ouvre plus
+ * `*.supabase.co` : il lit cette variable et n'ouvre que l'origine EXACTE du
+ * projet, comme en production. Sans elle, le build e2e n'ouvrait rien, et le
+ * test, resté sur l'ancien joker, rougissait `main` depuis le 06/11/2026. La
+ * clé anonyme n'est PAS posée : le backend distant exige les deux, l'app reste
+ * donc en mode local pour toute la suite. Le job E2E du socle n'injecte pas le
+ * `build-env` de la CI, d'où la valeur dans la commande (même motif que
+ * miss-carbook).
  */
 const base = definePwaPlaywrightConfig({
   devices,
@@ -18,7 +28,7 @@ const base = definePwaPlaywrightConfig({
   preview: true,
   port: 4173,
   command:
-    'node scripts/with-env.mjs VITE_POSTHOG_KEY=phc_e2e0000000000000000000000 VITE_BASE_PATH=/ -- vite build && node scripts/with-env.mjs VITE_BASE_PATH=/ -- vite preview --port 4173 --strictPort',
+    'node scripts/with-env.mjs VITE_POSTHOG_KEY=phc_e2e0000000000000000000000 VITE_SUPABASE_URL=https://exemple-e2e.supabase.co VITE_BASE_PATH=/ -- vite build && node scripts/with-env.mjs VITE_BASE_PATH=/ -- vite preview --port 4173 --strictPort',
 });
 
 /**
