@@ -68,3 +68,23 @@ describe('index.css - le contour des contrôles', () => {
     }
   });
 });
+
+describe('index.css - le primaire comme texte', () => {
+  it.each([
+    ['clair', CLAIR],
+    ['sombre', SOMBRE],
+  ] as const)(
+    '%s : 4,5:1 sur chaque fond (boutons « contour », liens)',
+    (_theme, table) => {
+      // Relevé du 07/11/2026 : un bouton « contour » posé sur le fond de page
+      // peint le primaire en TEXTE. #1d826a passait le blanc, pas le fond.
+      const primaire = table.get('--dwc-primary') ?? '';
+      expect(primaire).toMatch(/^#[0-9a-f]{6}$/i);
+      for (const fond of ['--dwc-surface', '--dwc-surface-2', '--dwc-bg']) {
+        const couleur = table.get(fond) ?? '';
+        expect(couleur, fond).toMatch(/^#[0-9a-f]{6}$/i);
+        expect(contraste(primaire, couleur), fond).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  );
+});

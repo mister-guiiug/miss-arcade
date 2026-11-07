@@ -132,7 +132,7 @@ select matches(
   'il porte un code de retrait lisible (ni 0/O ni 1/I)'
 );
 select throws_ok(
-  $$ select arcade_spin('alpha', 'spin_test_0002') $$, 'PT409', null,
+  $$ select arcade_spin('alpha', 'spin_test_0002') $$, 'PT410', null,
   'le stock épuisé, plus rien n’est tirable'
 );
 select throws_ok(

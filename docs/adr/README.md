@@ -17,20 +17,23 @@ Le contexte mesuré, la décision, ses conséquences — **y compris désagréab
 — et ce qu'elle écarte. Une décision qui ne dit pas ce qu'elle refuse n'aide
 personne à la rediscuter.
 
-| #                                               | Décision                                                         |
-| ----------------------------------------------- | ---------------------------------------------------------------- |
-| [0001](./0001-routeur.md)                       | Routeur par CHEMIN, pas par `#`                                  |
-| [0002](./0002-etat-et-persistance.md)           | Zustand pour l'état vivant, magasin versionné pour ce qui survit |
-| [0003](./0003-i18n.md)                          | i18n du socle, deux langues, formateurs liés à la locale         |
-| [0004](./0004-backend.md)                       | Un port, un repli local, une migration port par port             |
-| [0005](./0005-mise-a-jour-du-service-worker.md) | `prompt`, jamais `autoUpdate`                                    |
-| [0006](./0006-observabilite.md)                 | Journal toujours, Sentry seulement s'il est configuré            |
-| [0007](./0007-comptes-et-droits.md)             | La base décide des droits ; l'interface se contente d'obéir      |
-| [0008](./0008-annuler-plutot-que-confirmer.md)  | Annuler remplace confirmer : un sursis de huit secondes          |
-| [0009](./0009-supprimer-son-compte.md)          | Effacer son compte, pas seulement ses données — et le prouver    |
-| [0010](./0010-ecrire-hors-ligne.md)             | Écrire hors ligne : une file sur le port, pas dans l'adaptateur  |
-| [0011](./0011-mesure-audience.md)               | Une propriété GA4 pour le parc, l'application en dimension       |
-| [0012](./0012-posthog-en-europe.md)             | PostHog en Europe remplace GA4 — l'outil, pas la forme           |
+| #                                               | Décision                                                             |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| [0001](./0001-routeur.md)                       | Routeur par CHEMIN, pas par `#`                                      |
+| [0002](./0002-etat-et-persistance.md)           | Zustand pour l'état vivant, magasin versionné pour ce qui survit     |
+| [0003](./0003-i18n.md)                          | i18n du socle, deux langues, formateurs liés à la locale             |
+| [0004](./0004-backend.md)                       | Un port, un repli local, une migration port par port                 |
+| [0005](./0005-mise-a-jour-du-service-worker.md) | `prompt`, jamais `autoUpdate`                                        |
+| [0006](./0006-observabilite.md)                 | Journal toujours, Sentry seulement s'il est configuré                |
+| [0007](./0007-comptes-et-droits.md)             | La base décide des droits ; l'interface se contente d'obéir          |
+| [0008](./0008-annuler-plutot-que-confirmer.md)  | Annuler remplace confirmer : un sursis de huit secondes              |
+| [0009](./0009-supprimer-son-compte.md)          | Effacer son compte, pas seulement ses données — et le prouver        |
+| [0010](./0010-ecrire-hors-ligne.md)             | Écrire hors ligne : une file sur le port, pas dans l'adaptateur      |
+| [0011](./0011-mesure-audience.md)               | Une propriété GA4 pour le parc, l'application en dimension           |
+| [0012](./0012-posthog-en-europe.md)             | PostHog en Europe remplace GA4 — l'outil, pas la forme               |
+| [0013](./0013-tirage-serveur-et-bornes.md)      | Le serveur décide du tirage ; la borne appairée tire hors ligne      |
+| [0014](./0014-file-d-envoi-hors-ligne.md)       | Une file d'envoi, pas une pile ; les coordonnées n'y font que passer |
+| [0015](./0015-leads-consentement-et-borne.md)   | Un lead par tirage, un consentement daté ; la borne à part           |
 
 ## Quand une application s'écarte
 

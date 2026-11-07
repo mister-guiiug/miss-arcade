@@ -10,33 +10,102 @@ test.describe('@critical le cadre', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Miss Arcade'
     );
-    await expect(page.getByRole('heading', { level: 2 })).toHaveText(
-      'Bandit manchot'
-    );
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Bandit manchot' })
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Lancer' })).toBeVisible();
   });
 
   test('un tirage affiche un résultat', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Lancer' }).click();
-    await expect(
-      page.getByText(/Bravo|Pas de chance|Retentez|gagne/i)
-    ).toBeVisible({ timeout: 8_000 });
+    await expect(page.locator('.arcade-result-message')).toHaveText(
+      /Bravo|Pas de chance/,
+      { timeout: 8_000 }
+    );
   });
 
-  test('l’admin change le type de jeu vers la roue', async ({ page }) => {
+  test('un double appui ne fait qu’UN tirage', async ({ page }) => {
+    // Jusqu'au 07/11/2026, le bouton ne se verrouillait qu'après la réponse
+    // du serveur : deux appuis rapides, deux tirages, deux lots décomptés.
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Lancer' }).dblclick();
+    await expect(page.locator('.arcade-result-message')).toBeVisible({
+      timeout: 8_000,
+    });
+    const tirages = await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem('miss-arcadearcade') ?? '{}').data
+          ?.spins?.length
+    );
+    expect(tirages).toBe(1);
+  });
+
+  test('l’admin change le type de jeu, et rien ne part avant « Enregistrer »', async ({
+    page,
+  }) => {
     await page.goto('/admin');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Administration'
     );
     await page.getByRole('tab', { name: 'Roue de la fortune' }).click();
+    await expect(
+      page.getByText('Modifications non enregistrées')
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByText('Modifications enregistrées.')).toBeVisible();
     await page.getByRole('link', { name: 'Jouer' }).click();
-    await expect(page.getByRole('heading', { level: 2 })).toHaveText(
-      'Roue de la fortune'
-    );
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Roue de la fortune' })
+    ).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Tourner la roue' })
     ).toBeVisible();
+  });
+
+  test('un joueur laisse ses coordonnées avec son accord ; l’admin les retrouve et les exporte', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Lancer' }).click();
+    const email = page.getByLabel('E-mail');
+    await expect(email).toBeVisible({ timeout: 8_000 });
+    await email.fill('ada@exemple.test');
+    await page.getByRole('button', { name: 'Envoyer' }).click();
+    await expect(
+      page.getByText(
+        'Votre accord est nécessaire pour enregistrer vos coordonnées.'
+      )
+    ).toBeVisible();
+    await page.getByRole('checkbox', { name: /J’accepte/ }).check();
+    await page.getByRole('button', { name: 'Envoyer' }).click();
+    await expect(
+      page.getByText('Merci ! Vos coordonnées sont enregistrées.')
+    ).toBeVisible();
+
+    await page.goto('/admin/contacts');
+    await expect(page.getByText('ada@exemple.test')).toBeVisible();
+    const [telechargement] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Exporter en CSV' }).click(),
+    ]);
+    const chemin = await telechargement.path();
+    const { readFileSync } = await import('node:fs');
+    const csv = readFileSync(chemin, 'utf8');
+    expect(csv.charCodeAt(0)).toBe(0xfeff);
+    expect(csv).toContain('ada@exemple.test');
+    expect(csv).toContain(';');
+  });
+
+  test('la borne s’ouvre plein écran, sans la coquille de l’application', async ({
+    page,
+  }) => {
+    await page.goto('/j/demo');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Lancer' })).toBeVisible();
+    await expect(page.locator('[data-dwc="bottom-nav"]')).toHaveCount(0);
+    await expect(page.locator('[data-dwc="app-footer"]')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Admin' })).toHaveCount(0);
   });
 
   test('la navigation atteint les destinations', async ({ page }) => {
@@ -84,7 +153,7 @@ test.describe('@critical le cadre', () => {
   test('un fichier arcade s’importe et survit au rechargement', async ({
     page,
   }) => {
-    await page.goto('/reglages');
+    await page.goto('/admin/donnees');
     await page.getByLabel('Importer').setInputFiles({
       name: 'arcade.json',
       mimeType: 'application/json',
@@ -138,9 +207,9 @@ test.describe('@critical le cadre', () => {
 
     await context.setOffline(true);
     await page.getByRole('button', { name: 'Lancer' }).click();
-    await expect(
-      page.getByText(/Bravo|Pas de chance|Retentez|gagne/i)
-    ).toBeVisible({ timeout: 8_000 });
+    await expect(page.locator('.arcade-result-message')).toBeVisible({
+      timeout: 8_000,
+    });
     await expect(page.locator('[data-dwc="connection-banner"]')).toBeVisible({
       timeout: 10_000,
     });

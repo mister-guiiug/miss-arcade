@@ -2,7 +2,7 @@
   "name": "miss-arcade",
   "private": true,
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "engines": {
     "node": ">=24.21.0"
@@ -23,15 +23,15 @@
     "type-check": "tsc -b",
     "type-check:7": "pwa-typecheck-7",
     "doctor": "pwa-doctor",
-    "icons": "pwa-icons --source public/favicon.svg --out public/icons --maskable --bg 59,110,165",
+    "icons": "pwa-icons --source public/favicon.svg --out public/icons --maskable --bg 24,118,95",
     "prepare": "husky || true",
-    "screenshots": "pwa-screenshots --wide-path reglages"
+    "screenshots": "pwa-screenshots --wide-path j/demo"
   },
   "bundleBudget": {
-    "_pourquoi": "REPOSÉ À LA MARGE QUE LA RÈGLE DEMANDE, le 20/09/2026. Les trois bornes étaient à 0,2 à 0,6 % du poids mesuré — 479 kB sous 480, 261,0 sous 262, 159,0 sous 160 — alors que le bin qui les vérifie dit « un budget se pose à poids courant + marge », marge 10 % par défaut, et que `pwa-doctor` répète « poser le budget à +10 % ». Une marge d'un kilo-octet ne mesure plus rien : elle fait rougir LA CI DU SOCLE, qui construit ce squelette sur le paquet candidat à chaque PR, dès qu'un composant partagé gagne une ligne. Arrivé le 20/09 avec `BottomNav navigate` et `items[].load` (dev-pwa-config#326) : +1 kB brut sur le morceau principal, +0,4 kB gzip au total, et une borne rouge pour la fonctionnalité que ce squelette est justement là pour montrer. Les valeurs ci-dessous sont le relevé EN CI de `main` (run 35510079498 : 261,0 / 159,0 / 479) porté à +10 % et arrondi au kilo-octet supérieur — la formule de `pwa-bundle-budget` elle-même. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/miss-arcade --log | grep 'TOTAL gzip'. LE COÛT DE POSTHOG RESTE DIT, et c'est pour ça que la troisième borne existe : `totalGzipKb` additionne TOUT le JS émis, morceaux différés compris, et `posthog-js` (48,9 kB gzip — l'entrée `module.slim.js` et non l'entrée par défaut, 48,7 kB économisés) est chargé par le `loader` d'`App.tsx` APRÈS l'accord : un visiteur qui refuse ne le télécharge jamais. `preloadGzipKb` mesure ce que `dist/index.html` référence vraiment, et lui ne bouge pas avec PostHog.",
-    "totalGzipKb": 305,
-    "preloadGzipKb": 194,
-    "mainChunkKb": 581
+    "_pourquoi": "REPOSÉ LE 07/11/2026 AVEC LA 0.2.0 (borne, file d'envoi hors ligne, administration complète), à la formule du bin : poids mesuré + 10 %, arrondi au kilo-octet supérieur. Ce qui a grandi, mesuré : l'administration (11,2 kB gzip, morceau différé, jamais chargé par un visiteur de borne), `uqr` pour les QR d'appairage (4,3 kB, différé), et environ 16 kB sur le morceau principal (la borne plein écran, la file d'envoi du socle, les schémas Zod qui relisent chaque réponse du serveur, les libellés français et anglais). `totalGzipKb` additionne TOUT le JS émis, morceaux différés compris : PostHog (`module.slim.js`, 50 kB, chargé après l'accord seulement) et le SDK Supabase (55 kB, chargé au premier appel) y pèsent encore. `preloadGzipKb` mesure ce que `dist/index.html` référence vraiment. MESURER EN CI, PAS EN LOCAL : gh run view <id> -R mister-guiiug/miss-arcade --log | grep 'TOTAL gzip'.",
+    "totalGzipKb": 340,
+    "preloadGzipKb": 212,
+    "mainChunkKb": 630
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
@@ -70,6 +70,7 @@
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.5",
     "tailwindcss": "^4.3.4",
+    "uqr": "^0.1.3",
     "zod": "^4.6.7",
     "zustand": "^5.0.16"
   },
@@ -82,5 +83,10 @@
     },
     "minimatch@>=7.0.0 <11.0.1": "^11.0.4",
     "glob@>=11.0.0 <14.0.0": "^14.0.3"
+  },
+  "pwaDoctor": {
+    "refus": {
+      "nav-attente": "AppShell (socle 6.32) ne transmet pas `navigate` à sa BottomNav : le remède du contrôle n'est pas atteignable sans quitter la coquille. Le seul morceau paresseux est l'administration, tirée au repos (useIdlePrefetch), à l'approche du pointeur (items[].load) et précachée par le service worker : le clic la trouve déjà chargée. À retirer quand AppShell acceptera `navNavigate`."
+    }
   }
 }

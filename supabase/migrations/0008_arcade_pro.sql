@@ -408,7 +408,7 @@ begin
      and weight > 0
      and (stock is null or stock > 0);
   if total <= 0 then
-    raise exception 'aucun lot disponible' using errcode = 'PT409';
+    raise exception 'aucun lot disponible' using errcode = 'PT410';
   end if;
 
   remaining := random() * total;

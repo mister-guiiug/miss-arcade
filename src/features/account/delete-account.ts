@@ -1,7 +1,6 @@
 import { createLogger } from '@mister-guiiug/dev-pwa-config/logger';
 import { supabase } from '../../backend/supabase.ts';
-import { notesStore } from '../../backend/local.ts';
-import { arcadeStore } from '../arcade/store.ts';
+import { forgetAdminPreferences } from '../arcade/admin/admin-store.ts';
 
 const log = createLogger('compte');
 
@@ -34,12 +33,11 @@ export function memeAdresse(saisie: string, compte: string): boolean {
  *     d'autre : l'utilisateur reste connecté, voit l'erreur, et peut
  *     recommencer. L'inverse — déconnecter puis effacer — laisserait un compte
  *     intact et quelqu'un dehors, sans moyen d'y revenir ;
- *  2. LE MIROIR LOCAL ENSUITE. Le magasin versionné peut porter des notes
- *     écrites avant qu'un backend ne soit configuré sur cet appareil. Elles ne
- *     sont pas dans la base, donc `delete_my_account()` ne les voit pas — et
- *     « supprimer mon compte » ne peut pas laisser des données de l'utilisateur
- *     sur l'écran suivant. Le thème et la langue restent : ce sont des
- *     préférences d'appareil, pas des données de compte ;
+ *  2. LE MIROIR LOCAL ENSUITE. L'administration garde sur l'appareil le
+ *     client choisi et le dernier instantané chargé : ils appartiennent au
+ *     compte qui part, pas à l'appareil. Le thème, la langue et l'appairage de
+ *     la borne restent : ce sont des réglages d'appareil, pas des données de
+ *     compte ;
  *  3. LA SESSION EN DERNIER, et **en portée locale**. Une déconnexion globale
  *     demande au serveur de révoquer les jetons ; le compte n'existant plus, la
  *     requête échoue, et l'application garde une session qui ne mène nulle
@@ -51,7 +49,8 @@ export function memeAdresse(saisie: string, compte: string): boolean {
 export async function deleteMyAccount(): Promise<void> {
   const db = await supabase.getClient();
 
-  // Le nom de la fonction est celui de `0005_supprimer_son_compte.sql`. Elle
+  // Le nom de la fonction est celui de `0005_supprimer_son_compte.sql` (réécrite
+  // par 0008). Elle
   // est `security definer` et n'accepte aucun argument : l'identité vient du
   // jeton (`auth.uid()`), jamais du client. Passer l'identifiant en paramètre
   // aurait laissé le client demander l'effacement de quelqu'un d'autre.
@@ -61,8 +60,7 @@ export async function deleteMyAccount(): Promise<void> {
     throw new Error(error.message);
   }
 
-  notesStore.clear();
-  arcadeStore.clear();
+  forgetAdminPreferences();
 
   const { error: deconnexion } = await db.auth.signOut({ scope: 'local' });
   // La session locale qui résiste ne remet pas le compte en place : on le
