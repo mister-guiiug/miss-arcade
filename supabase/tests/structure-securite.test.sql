@@ -70,8 +70,13 @@ select set_eq(
     -- pour anon
     'has_role',
     'is_admin',
-    -- Tirage public pondéré : lit/écrit les lots du tenant publié uniquement
-    'arcade_public_spin'
+    -- Le jeu public (0008) : chacune ne touche que le client publié nommé,
+    -- ou celui de la borne dont le jeton est présenté
+    'arcade_public_game',
+    'arcade_spin',
+    'arcade_record_offline_spin',
+    'arcade_submit_lead',
+    'arcade_kiosk_status'
   ],
   'les fonctions SECURITY DEFINER exécutables par anon sont exactement la liste relue'
 );

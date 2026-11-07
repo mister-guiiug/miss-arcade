@@ -15,9 +15,9 @@
 -- ╚══════════════════════════════════════════════════════════════════════════╝
 
 begin;
-select plan(13);
+select plan(14);
 
--- ── Décor : deux comptes, une note chacun, et Bob administrateur ─────────
+-- ── Décor : deux comptes, Alice admin d'un client, Bob administrateur ────
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'alice@exemple.test'),
@@ -60,23 +60,40 @@ select is(
   'le profil naît avec le compte, sans requête du client'
 );
 
-insert into notes (id, user_id, text) values
-  ('note_alice', '11111111-1111-1111-1111-111111111111', 'à Alice'),
-  ('note_bob', '22222222-2222-2222-2222-222222222222', 'à Bob');
+-- Deux clients, un lead chacun ; Alice administre le premier seulement.
+-- (Les notes du squelette ont servi ici jusqu'au 07/11/2026 : la table est
+-- partie avec 0008, l'isolation se prouve désormais sur les données de
+-- l'arcade, qui sont les seules à protéger.)
+insert into tenants (id, slug, name) values
+  ('33333333-3333-3333-3333-333333333333', 'rls-x', 'Client X'),
+  ('44444444-4444-4444-4444-444444444444', 'rls-y', 'Client Y');
+insert into tenant_admins (tenant_id, user_id)
+values ('33333333-3333-3333-3333-333333333333', '11111111-1111-1111-1111-111111111111');
+insert into arcade_leads (id, tenant_id, prize_label, game, fields) values
+  ('lead_x', '33333333-3333-3333-3333-333333333333', 'Lot de X', 'bandit', '{"prenom":"Xavier"}'),
+  ('lead_y', '44444444-4444-4444-4444-444444444444', 'Lot de Y', 'roue', '{"prenom":"Yvonne"}');
+
+select is(
+  (select custom_access_token_hook(
+     '{"user_id":"11111111-1111-1111-1111-111111111111","claims":{}}'::jsonb
+   ) -> 'claims' -> 'app_metadata' ->> 'tenant_id'),
+  '33333333-3333-3333-3333-333333333333',
+  'le hook recopie le client administré dans le jeton'
+);
 
 -- ── `anon` ne voit rien ───────────────────────────────────────────────────
 
 set local role anon;
 
--- PLUS FORT QU'UNE LISTE VIDE : la lecture est REFUSÉE. Le premier verrou de
--- 0003 (`revoke all … from anon`) fait échouer la requête en 42501 avant même
--- que les politiques ne filtrent. Ces trois assertions attendaient un zéro ;
--- la première exécution réelle (06/09/2026, pile jetable en CI) a montré
--- qu'elles n'avaient jamais pu passer — elles étaient vertes et fausses,
--- parce que jamais jouées.
+-- PLUS FORT QU'UNE LISTE VIDE : la lecture est REFUSÉE. Le premier verrou
+-- (`revoke all … from anon`) fait échouer la requête en 42501 avant même que
+-- les politiques ne filtrent. Ces assertions attendaient un zéro ; la première
+-- exécution réelle (06/09/2026, pile jetable en CI) a montré qu'elles
+-- n'avaient jamais pu passer : elles étaient vertes et fausses, parce que
+-- jamais jouées.
 select throws_ok(
-  $$ select count(*) from notes $$, '42501', null,
-  'anon ne peut même pas lire la table des notes'
+  $$ select count(*) from tenant_admins $$, '42501', null,
+  'anon ne peut même pas lire qui administre quoi'
 );
 select throws_ok(
   $$ select count(*) from profiles $$, '42501', null,
@@ -87,7 +104,7 @@ select throws_ok(
   'anon ne peut même pas lire la table des rôles'
 );
 
--- ── Alice ne voit qu'elle ─────────────────────────────────────────────────
+-- ── Alice ne voit que son client ──────────────────────────────────────────
 
 reset role;
 set local role authenticated;
@@ -95,14 +112,14 @@ set local request.jwt.claims to
   '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 
 select is(
-  (select count(*)::int from notes),
+  (select count(*)::int from arcade_leads),
   1,
-  'un compte ne voit que ses propres notes'
+  'un admin de client ne voit que les leads de son client'
 );
 select is(
-  (select text from notes),
-  'à Alice',
-  'et ce sont bien les siennes'
+  (select prize_label from arcade_leads),
+  'Lot de X',
+  'et ce sont bien les siens'
 );
 select is(
   (select count(*)::int from profiles),
@@ -113,11 +130,11 @@ select is(
 -- ── Ce qu'elle ne peut pas faire ──────────────────────────────────────────
 
 select throws_ok(
-  $$ insert into notes (id, user_id, text)
-     values ('usurpee', '22222222-2222-2222-2222-222222222222', 'au nom de Bob') $$,
+  $$ insert into arcade_leads (id, tenant_id, prize_label, game, fields)
+     values ('usurpe', '44444444-4444-4444-4444-444444444444', 'Faux', 'bandit', '{}') $$,
   '42501',
   null,
-  'écrire au nom d’un autre est refusé par la base'
+  'écrire un lead à la main est refusé par la base, même connecté'
 );
 
 select throws_ok(
@@ -129,22 +146,22 @@ select throws_ok(
 );
 
 select is(
-  (select count(*)::int from notes
-   where id = 'note_bob'),
+  (select count(*)::int from arcade_leads
+   where id = 'lead_y'),
   0,
-  'la note d’un autre reste invisible, même nommée'
+  'le lead d’un autre client reste invisible, même nommé'
 );
 
--- Supprimer la note d'un autre ne lève pas : la RLS la rend simplement
+-- Supprimer le lead d'un autre ne lève pas : la RLS le rend simplement
 -- invisible, donc la suppression ne trouve rien. C'est le comportement
 -- attendu, et il vaut d'être figé : un test qui attendrait une erreur ici
 -- échouerait sans qu'aucune faille n'existe.
-delete from notes where id = 'note_bob';
+delete from arcade_leads where id = 'lead_y';
 reset role;
 select is(
-  (select count(*)::int from notes where id = 'note_bob'),
+  (select count(*)::int from arcade_leads where id = 'lead_y'),
   1,
-  'la note d’un autre survit à une tentative de suppression'
+  'le lead d’un autre client survit à une tentative de suppression'
 );
 
 select * from finish();
