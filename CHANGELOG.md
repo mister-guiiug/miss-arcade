@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.1 (07/11/2026)
+
+### Corrigé
+
+- La barre du bas dit qu'elle charge quand on ouvre l'administration pour la
+  première fois, au lieu d'un clic qui semblait sans effet (socle 6.33.0,
+  `navNavigate`).
+- La file d'envoi : « Envoyer maintenant » attend que les contacts soient
+  vraiment partis, et une file effacée par « Supprimer mes données » ne
+  revient plus de la mémoire pour partir vers le serveur (socle 6.33.0).
+
+### Maintenance
+
+- Socle 6.33.0. L'app y a remonté ce qu'elle contournait : la neutralisation
+  des formules dans l'export CSV (qui garde aussi un téléphone `+33…` en
+  texte), la lecture des codes réseau comme des mots, la graine stable du
+  magasin local. Sa propre neutralisation et le refus `nav-attente` du
+  contrôle du parc sont retirés.
+
 ## 0.2.0 (07/11/2026)
 
 ### Corrigé

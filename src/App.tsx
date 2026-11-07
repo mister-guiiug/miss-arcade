@@ -5,6 +5,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigate,
 } from 'react-router-dom';
 import { Gamepad2, Home, Info, Settings, UserRound } from 'lucide-react';
 import { AppShell } from '@mister-guiiug/dev-pwa-config/react/app-shell';
@@ -59,11 +60,19 @@ const AdminScreen = lazy(() =>
  * en développement ni en e2e, servis sous `/`. Relevé le 03/10/2026 ; la prop
  * existe depuis le socle 6.23.0.
  *
+ * `navNavigate={navigate}` : la barre pilote la navigation, et dit qu'elle
+ * charge pendant que l'administration (morceau paresseux) arrive. Sans lui,
+ * react-router navigue dans une transition, React garde l'écran courant et le
+ * repli de Suspense ne paraît jamais : le clic semble sans effet. La coquille
+ * ne transmettait pas `navigate` avant le socle 6.33.0 ; l'app répondait au
+ * contrôle `nav-attente` par un refus motivé, retiré avec la montée.
+ *
  * Exporté pour `App.nav.test.tsx`, qui le monte sous un `basename`.
  */
 export function Shell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   /*
    * UNE VUE DE PAGE PAR NAVIGATION — ni zéro, ni deux. PostHog en envoie une
@@ -141,6 +150,7 @@ export function Shell() {
       hrefProp="to"
       navItems={nav}
       navCurrentPath={pathname}
+      navNavigate={navigate}
       // L'administration a des tableaux (contacts, statistiques) : la colonne
       // de lecture du reste de l'app les tasserait.
       width={pathname.startsWith('/admin') ? 'lg' : 'md'}

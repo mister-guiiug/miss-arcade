@@ -289,9 +289,10 @@ function matches(lead: LeadRecord, search: string): boolean {
 }
 
 export function createLocalBackend(): ArcadeBackend {
-  // Le premier instantané est ÉCRIT dès sa première lecture : sinon chaque
-  // `load()` rend une graine neuve, et le jeu affiché, le tirage et l'admin
-  // ne parlent pas des mêmes lots.
+  // Le premier instantané est ÉCRIT dès sa première lecture. Depuis le socle
+  // 6.33.0, la graine ne change plus d'une lecture à l'autre, mais seulement
+  // le temps de la page : son `updatedAt` et ses lots doivent survivre au
+  // rechargement, car le brouillon de l'admin et la file d'envoi y renvoient.
   const read = () => {
     const state = arcadeStore.load();
     // `export()` relit par `load()`, donc rend la graine : c'est la clé brute
