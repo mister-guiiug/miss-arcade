@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LeadRecord } from '../model.ts';
-import { leadsToCsv, neutralizeFormula } from './leads-csv.ts';
+import { leadsToCsv } from './leads-csv.ts';
 
 const labels = {
   date: 'Date',
@@ -45,14 +45,27 @@ describe('l’export CSV des contacts', () => {
     expect(csv).toContain('Hors ligne');
   });
 
-  it('neutralise une formule tapée par un visiteur', () => {
-    expect(neutralizeFormula('=HYPERLINK("http://x")')).toBe(
-      '\'=HYPERLINK("http://x")'
+  it('neutralise une formule tapée par un visiteur (socle, excel-fr)', () => {
+    // La neutralisation vient du socle depuis la 6.33.0 : ce test garde le
+    // contrat de l'export, quel que soit celui qui l'assure.
+    const csv = leadsToCsv(
+      [
+        lead({
+          prenom: '=HYPERLINK("http://x")',
+          nom: '@SUM(A1)',
+          email: 'ada@example.org',
+          telephone: '+33612345678',
+        }),
+      ],
+      labels,
+      iso => iso.slice(0, 10)
     );
-    expect(neutralizeFormula('+33 6 12 34 56 78')).toBe("'+33 6 12 34 56 78");
-    expect(neutralizeFormula('@SUM(A1)')).toBe("'@SUM(A1)");
-    expect(neutralizeFormula('Ada')).toBe('Ada');
-    const csv = leadsToCsv([lead({ nom: '=1+1' })], labels, iso => iso);
-    expect(csv).toContain("'=1+1");
+    const ligne = csv.split('\r\n')[1] ?? '';
+    expect(ligne).toContain(`"'=HYPERLINK(""http://x"")"`);
+    expect(ligne).toContain("'@SUM(A1)");
+    expect(ligne).toContain(';ada@example.org;');
+    // Un téléphone en « + » reste du texte : sans l'apostrophe, Excel en
+    // ferait un nombre, sans son « + ».
+    expect(ligne).toContain("'+33612345678");
   });
 });

@@ -20,40 +20,34 @@ export interface LeadCsvLabels {
 }
 
 /**
- * Une cellule qui commence par `=`, `+`, `-`, `@` (ou une tabulation, un
- * retour) est lue comme une FORMULE par Excel : un visiteur qui tape
- * `=HYPERLINK(…)` en guise de prénom l'exécuterait chez l'organisateur.
- * L'apostrophe de tête la force en texte, et Excel ne l'affiche pas (OWASP,
- * « CSV injection »). Le socle ne le fait pas : `csv.js` n'écrit que du texte.
- */
-export function neutralizeFormula(value: string): string {
-  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
-}
-
-/**
  * Les contacts en CSV, au dialecte `excel-fr` du socle : point-virgule et BOM
  * UTF-8. Sans le BOM, Excel lit l'UTF-8 comme du Latin-1 et « Hélène » devient
  * « HÃ©lÃ¨ne » ; sans le point-virgule, un Excel français met tout dans une
  * seule colonne. Le texte du consentement suit chaque ligne : c'est la preuve.
+ *
+ * LES FORMULES SONT NEUTRALISÉES PAR LE SOCLE (6.33.0, `neutralizeFormulas`
+ * d'`excel-fr`). Les champs sont saisis par des visiteurs : un prénom
+ * `=HYPERLINK(…)` s'exécuterait dans l'Excel de l'organisateur, et un
+ * téléphone `+33…` y deviendrait un nombre sans son « + ». L'app le faisait
+ * elle-même jusqu'à la 0.2.0 ; le socle l'a repris.
  */
 export function leadsToCsv(
   leads: readonly LeadRecord[],
   labels: LeadCsvLabels,
   formatDate: (iso: string) => string
 ): string {
-  const safe = neutralizeFormula;
   const rows = leads.map(lead => ({
     date: formatDate(lead.createdAt),
     outcome: lead.lose === null ? '' : lead.lose ? labels.lost : labels.won,
-    prize: safe(lead.prizeLabel),
+    prize: lead.prizeLabel,
     code: lead.redeemCode ?? '',
-    prenom: safe(lead.fields.prenom ?? ''),
-    nom: safe(lead.fields.nom ?? ''),
-    email: safe(lead.fields.email ?? ''),
-    telephone: safe(lead.fields.telephone ?? ''),
+    prenom: lead.fields.prenom ?? '',
+    nom: lead.fields.nom ?? '',
+    email: lead.fields.email ?? '',
+    telephone: lead.fields.telephone ?? '',
     source: lead.source === 'offline' ? labels.offline : labels.online,
     consentAt: lead.consentAt ? formatDate(lead.consentAt) : '',
-    consentText: safe(lead.consentText ?? ''),
+    consentText: lead.consentText ?? '',
   }));
   return toCsv(rows, {
     dialect: 'excel-fr',

@@ -51,8 +51,10 @@ export function fromPostgrest(
 ): ArcadeError {
   const code = failure.code ?? '';
   const message = failure.message || 'erreur inconnue';
-  // Le code d'abord : le texte trompe (« borne non reconnue » contient
-  // « econn », que l'heuristique réseau du socle prend pour une coupure).
+  // Le code d'abord : c'est lui que lèvent les fonctions de 0008, le texte
+  // n'est qu'un repli. Il a déjà trompé : « borne non reconnue » contient
+  // « econn », que `isTransientMessage` prenait pour une coupure jusqu'au
+  // socle 6.33.0.
   const http = code.startsWith('PT') ? Number(code.slice(2)) : status;
   switch (http) {
     case 400:
