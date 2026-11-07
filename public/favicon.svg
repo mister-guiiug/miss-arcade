@@ -1,33 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Miss Arcade">
   <!--
-    LA MARQUE DU SQUELETTE, ET CE QU'IL FAUT EN FAIRE. Ce fichier est servi
-    tel quel par l'en-tête de la page, il fait le favicon, et `npm run icons`
-    en tire les six PNG du manifeste plus l'icône maskable. Le remplacer est
-    le geste 3 du README : une application engendrée ne garde pas ce « P. ».
+    LA MARQUE DE MISS ARCADE : trois bobines alignées sur trois étoiles, le
+    gain du bandit manchot. Ce fichier est servi tel quel par l'en-tête de la
+    page, il fait le favicon, et `npm run icons` en tire les PNG du manifeste
+    plus l'icône maskable.
 
     LA TUILE ET LE FOND DU MASKABLE VONT PAR PAIRE. Le maskable est fabriqué
     en réduisant cette image à 87,5 % puis en comblant le pourtour d'une
     couleur unie : l'option « bg » du script `icons`, dans `package.json`.
     Elle doit valoir la teinte EXACTE du rectangle ci-dessous, ici
-    59,110,165 pour #3b6ea5. Sans cet accord, le générateur comble avec son
-    défaut (12,18,34) et l'icône installée porte un CADRE bleu nuit autour de
-    la tuile — c'est ce que faisait ce squelette, et donc toutes les
-    applications nées de lui.
+    24,118,95 pour #18765f (le primaire de `index.css`). Sans cet accord,
+    l'icône installée porte un cadre d'une autre couleur autour de la tuile :
+    c'est ce que faisait le squelette, bleu, dont cette application est née.
 
-    En changeant la marque, changer les deux : le `fill` du rectangle, et les
-    trois nombres de l'option. Puis `npm run icons`, et regarder
-    `icon-maskable.png` : le pourtour ne doit pas se voir.
-
-    (Et l'option ne peut pas s'écrire ici avec ses deux tirets : XML interdit
-    le double tiret dans un commentaire, et le rasteriseur refuse le fichier.)
+    (L'option ne peut pas s'écrire ici avec ses deux tirets : XML interdit le
+    double tiret dans un commentaire, et le rasteriseur refuse le fichier.)
 
     LA TUILE RESTE UNIE, sans dégradé : un dégradé rendrait ce raccord
-    impossible. La marque, elle, peut en porter un.
+    impossible.
   -->
-  <rect width="64" height="64" rx="14" fill="#3b6ea5" />
-  <path
-    d="M20 44V20h9.5a8 8 0 0 1 0 16H26v8h-6Zm6-14h3.5a2 2 0 0 0 0-4H26v4Z"
-    fill="#ffffff"
-  />
-  <circle cx="44" cy="40" r="4" fill="#ffffff" />
+  <rect width="64" height="64" rx="14" fill="#18765f" />
+  <rect x="8" y="16" width="48" height="32" rx="8" fill="#0d3f33" />
+  <rect x="12.5" y="20.5" width="12" height="23" rx="3.5" fill="#ffffff" />
+  <rect x="26" y="20.5" width="12" height="23" rx="3.5" fill="#ffffff" />
+  <rect x="39.5" y="20.5" width="12" height="23" rx="3.5" fill="#ffffff" />
+  <polygon points="18.50,27.40 19.65,30.42 22.87,30.58 20.35,32.60 21.20,35.72 18.50,33.95 15.80,35.72 16.65,32.60 14.13,30.58 17.35,30.42" fill="#c9a227" />
+  <polygon points="32.00,27.40 33.15,30.42 36.37,30.58 33.85,32.60 34.70,35.72 32.00,33.95 29.30,35.72 30.15,32.60 27.63,30.58 30.85,30.42" fill="#c9a227" />
+  <polygon points="45.50,27.40 46.65,30.42 49.87,30.58 47.35,32.60 48.20,35.72 45.50,33.95 42.80,35.72 43.65,32.60 41.13,30.58 44.35,30.42" fill="#c9a227" />
 </svg>

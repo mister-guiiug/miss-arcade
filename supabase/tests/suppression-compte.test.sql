@@ -16,8 +16,8 @@
 -- ║     privilège de superutilisateur. Sans ces assertions, un test vert ne  ║
 -- ║     dirait pas si l'effacement vient de la fonction ou de la session de  ║
 -- ║     test, qui tourne sous `postgres` et pourrait tout faire.             ║
--- ║  2. LE RÉSULTAT — plus une ligne dans `profiles`, `notes`, `user_roles`  ║
--- ║     ni `auth.users`, et le compte du VOISIN intact.                      ║
+-- ║  2. LE RÉSULTAT : plus une ligne dans `profiles`, `tenant_admins`,       ║
+-- ║     `user_roles` ni `auth.users`, et le compte du VOISIN intact.         ║
 -- ║                                                                          ║
 -- ║ LE DÉCOR EST COMPTÉ AVANT. « Plus une ligne » est vrai d'une base vide : ║
 -- ║ sans les quatre premières assertions, ce fichier serait vert le jour où  ║
@@ -37,10 +37,15 @@ insert into auth.users (id, email) values
 insert into user_roles (user_id, role)
 values ('11111111-1111-1111-1111-111111111111', 'admin');
 
-insert into notes (id, user_id, text) values
-  ('note_alice_1', '11111111-1111-1111-1111-111111111111', 'à Alice'),
-  ('note_alice_2', '11111111-1111-1111-1111-111111111111', 'à Alice encore'),
-  ('note_bob', '22222222-2222-2222-2222-222222222222', 'à Bob');
+-- Chacun administre un client : le rattachement est la trace qu'un compte
+-- laisse dans l'arcade (les notes du squelette ont tenu ce rôle jusqu'au
+-- 07/11/2026, la table est partie avec 0008).
+insert into tenants (id, slug, name) values
+  ('33333333-3333-3333-3333-333333333333', 'suppr-a', 'Client d’Alice'),
+  ('44444444-4444-4444-4444-444444444444', 'suppr-b', 'Client de Bob');
+insert into tenant_admins (tenant_id, user_id) values
+  ('33333333-3333-3333-3333-333333333333', '11111111-1111-1111-1111-111111111111'),
+  ('44444444-4444-4444-4444-444444444444', '22222222-2222-2222-2222-222222222222');
 
 select is(
   (select count(*)::int from auth.users), 2,
@@ -51,8 +56,8 @@ select is(
   'décor : les deux profils sont nés avec les comptes'
 );
 select is(
-  (select count(*)::int from notes), 3,
-  'décor : trois notes, dont deux à Alice'
+  (select count(*)::int from tenant_admins), 2,
+  'décor : deux admins de client, dont Alice'
 );
 select is(
   (select count(*)::int from user_roles), 1,
@@ -160,10 +165,10 @@ select is(
   'plus un profil'
 );
 select is(
-  (select count(*)::int from notes
+  (select count(*)::int from tenant_admins
    where user_id = '11111111-1111-1111-1111-111111111111'),
   0,
-  'plus une note'
+  'plus de rattachement à un client'
 );
 select is(
   (select count(*)::int from user_roles
@@ -188,8 +193,8 @@ select is(
   'son profil aussi'
 );
 select is(
-  (select text from notes), 'à Bob',
-  'et sa note est la seule qui reste'
+  (select tenant_id::text from tenant_admins), '44444444-4444-4444-4444-444444444444',
+  'et son rattachement est le seul qui reste'
 );
 
 select * from finish();

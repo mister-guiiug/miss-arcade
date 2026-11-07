@@ -4,7 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nProvider } from '../../i18n/index.ts';
 import { supabase } from '../../backend/supabase.ts';
-import { notesStore } from '../../backend/local.ts';
+import { createStore } from '@mister-guiiug/dev-pwa-config/storage';
 import { deleteMyAccount, memeAdresse } from './delete-account.ts';
 import { DangerZone } from './DangerZone.tsx';
 
@@ -38,23 +38,23 @@ beforeEach(() => {
   // jsdom démarre en anglais : sans cette ligne, un test qui cherche
   // « Supprimer mon compte » attend un bouton nommé « Delete my account ».
   localStorage.setItem('dwc_locale', 'fr');
-  notesStore.clear();
 });
 
+/** Le client choisi par l'admin, gardé sur l'appareil. */
+const prefs = createStore('miss-arcade-admin-');
+
 describe('deleteMyAccount', () => {
-  it('appelle la fonction de la base, purge le miroir local, puis coupe la session SUR L’APPAREIL', async () => {
+  it('appelle la fonction de la base, oublie les choix d’admin de l’appareil, puis coupe la session SUR L’APPAREIL', async () => {
     const { rpc, signOut, client } = clientFactice();
     const getClient = vi
       .spyOn(supabase, 'getClient')
       .mockResolvedValue(client as never);
-    notesStore.save({
-      notes: [{ id: 'note_1', text: 'écrite avant', createdAt: 'hier' }],
-    });
+    prefs.set('client', 'client_alpha');
 
     await deleteMyAccount();
 
     expect(rpc).toHaveBeenCalledWith('delete_my_account');
-    expect(notesStore.load().notes).toEqual([]);
+    expect(prefs.get('client', null)).toBeNull();
     // `scope: 'local'` : une déconnexion globale demande au serveur de
     // révoquer les jetons d'un compte qui n'existe plus, échoue, et laisse
     // l'application avec une session qui ne mène nulle part.
@@ -69,14 +69,12 @@ describe('deleteMyAccount', () => {
     const getClient = vi
       .spyOn(supabase, 'getClient')
       .mockResolvedValue(client as never);
-    notesStore.save({
-      notes: [{ id: 'note_1', text: 'intacte', createdAt: 'hier' }],
-    });
+    prefs.set('client', 'client_alpha');
 
     await expect(deleteMyAccount()).rejects.toThrow('permission denied');
 
     expect(signOut).not.toHaveBeenCalled();
-    expect(notesStore.load().notes).toHaveLength(1);
+    expect(prefs.get('client', null)).toBe('client_alpha');
     getClient.mockRestore();
   });
 });

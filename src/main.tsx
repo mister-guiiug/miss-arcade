@@ -12,6 +12,7 @@ import { I18nProvider } from './i18n/index.ts';
 import { authAdapter } from './auth/index.ts';
 import { env } from './app/config/env.ts';
 import { App } from './App.tsx';
+import { startOutbox } from './features/arcade/sync/index.ts';
 import './index.css';
 
 /**
@@ -66,3 +67,7 @@ createRoot(container).render(
     </VersionProvider>
   </StrictMode>
 );
+
+// La file d'envoi démarre avec l'application : une borne rouverte après une
+// coupure envoie ce qu'elle a gardé sans attendre une nouvelle partie.
+startOutbox();

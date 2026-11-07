@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import {
   BrowserRouter,
   Link,
@@ -12,13 +13,28 @@ import { ConnectionBanner } from '@mister-guiiug/dev-pwa-config/react/connection
 import { ConsentBanner } from '@mister-guiiug/dev-pwa-config/react/consent-banner';
 import { usePageViews } from '@mister-guiiug/dev-pwa-config/react/use-page-views';
 import { AppUpdates } from '@mister-guiiug/dev-pwa-config/react/app-updates';
+import { SkeletonGroup } from '@mister-guiiug/dev-pwa-config/react/skeleton';
+import { useIdlePrefetch } from '@mister-guiiug/dev-pwa-config/react/use-prefetch';
 import { registerSW } from 'virtual:pwa-register';
 import { useI18n } from './i18n/index.ts';
 import { HomeScreen } from './features/home/HomeScreen.tsx';
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx';
 import { AboutScreen } from './features/about/AboutScreen.tsx';
 import { AccountScreen } from './features/account/AccountScreen.tsx';
-import { AdminScreen } from './features/arcade/AdminScreen.tsx';
+import { KioskScreen } from './features/arcade/kiosk/KioskScreen.tsx';
+
+/**
+ * L'ADMINISTRATION EN UN SEUL MORCEAU DIFFÉRÉ : le visiteur d'une borne ne la
+ * télécharge jamais au premier chargement (QR, statistiques, éditeurs). Un
+ * seul `lazy()` pour tout l'écran, pas un par rubrique : découper en dix
+ * morceaux fait MONTER le poids total (relevé du parc, budgets de bundle). Le
+ * service worker précache le morceau : l'admin locale reste disponible hors
+ * ligne.
+ */
+const loadAdmin = () => import('./features/arcade/admin/AdminScreen.tsx');
+const AdminScreen = lazy(() =>
+  loadAdmin().then(module => ({ default: module.AdminScreen }))
+);
 
 /**
  * LE CADRE : `AppShell` du socle (en-tête, contenu borné, barre basse).
@@ -63,6 +79,11 @@ export function Shell() {
    */
   usePageViews(pathname);
 
+  // Le morceau de l'admin, tiré quand le navigateur n'a rien d'autre à faire :
+  // le premier clic le trouve déjà là (la barre le tire aussi à l'approche du
+  // pointeur, par `load`). LE MÊME thunk que `lazy()`.
+  useIdlePrefetch(loadAdmin);
+
   const nav = [
     {
       href: '/',
@@ -74,6 +95,7 @@ export function Shell() {
       href: '/admin',
       label: t('nav.admin'),
       icon: <Gamepad2 aria-hidden="true" />,
+      load: loadAdmin,
     },
     {
       href: '/reglages',
@@ -107,20 +129,21 @@ export function Shell() {
     '/compte': t('account.title'),
     '/a-propos': t('about.title'),
   };
-  const title = pathname.startsWith('/j/')
-    ? t('app.name')
+  const title = pathname.startsWith('/admin')
+    ? t('admin.title')
     : (titles[pathname] ?? t('app.name'));
 
   return (
     <AppShell
       title={title}
-      backHref={
-        pathname === '/' || pathname.startsWith('/j/') ? undefined : '/'
-      }
+      backHref={pathname === '/' ? undefined : '/'}
       linkComponent={Link}
       hrefProp="to"
       navItems={nav}
       navCurrentPath={pathname}
+      // L'administration a des tableaux (contacts, statistiques) : la colonne
+      // de lecture du reste de l'app les tasserait.
+      width={pathname.startsWith('/admin') ? 'lg' : 'md'}
       beforeMain={<ConnectionBanner />}
       afterMain={
         /*
@@ -162,19 +185,23 @@ export function Shell() {
         />
       }
     >
-      <Routes>
-        <Route path="/" element={<HomeScreen />} />
-        <Route path="/j/:slug" element={<HomeScreen />} />
-        <Route path="/admin" element={<AdminScreen />} />
-        <Route path="/reglages" element={<SettingsScreen />} />
-        <Route path="/compte" element={<AccountScreen />} />
-        <Route path="/a-propos" element={<AboutScreen />} />
-        {/* Le repli de route rend l'accueil ; le repli de SERVEUR est le
+      <Suspense
+        fallback={<SkeletonGroup label={t('admin.loading')} lines={4} />}
+      >
+        <Routes>
+          <Route path="/" element={<HomeScreen />} />
+          <Route path="/admin" element={<AdminScreen />} />
+          <Route path="/admin/:section" element={<AdminScreen />} />
+          <Route path="/reglages" element={<SettingsScreen />} />
+          <Route path="/compte" element={<AccountScreen />} />
+          <Route path="/a-propos" element={<AboutScreen />} />
+          {/* Le repli de route rend l'accueil ; le repli de SERVEUR est le
             `404.html` posé par `spaFallbackPlugin`. Les deux sont
             nécessaires : sans le second, GitHub Pages sert sa propre page
             d'erreur avant que ce routeur n'existe. */}
-        <Route path="*" element={<HomeScreen />} />
-      </Routes>
+          <Route path="*" element={<HomeScreen />} />
+        </Routes>
+      </Suspense>
     </AppShell>
   );
 }
@@ -189,7 +216,13 @@ export function App() {
           jours, qui autrement ne verrait rien avant un démarrage à froid. */}
       <AppUpdates registerSW={registerSW} checkEvery="1h">
         <BrowserRouter basename={import.meta.env.BASE_URL}>
-          <Shell />
+          {/* LA BORNE HORS DE LA COQUILLE : plein écran, sans barre du bas ni
+              pied de page. Le visiteur d'un stand n'a rien à faire dans
+              Admin, Réglages ou Compte, que le cadre lui montrait. */}
+          <Routes>
+            <Route path="/j/:slug" element={<KioskScreen />} />
+            <Route path="*" element={<Shell />} />
+          </Routes>
         </BrowserRouter>
       </AppUpdates>
     </ObservabilityBoundary>

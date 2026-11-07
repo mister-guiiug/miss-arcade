@@ -114,6 +114,27 @@ export default defineConfig(({ command }) => {
           shortName: 'Miss Arcade',
           description:
             'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.',
+          // LES IMAGES DE MARQUE D'UNE BORNE, GARDÉES POUR LE HORS LIGNE. Fond
+          // et logo vivent dans le Storage Supabase, hors du précache : sans
+          // cette règle, une borne qui perdait le réseau perdait aussi sa
+          // marque. `CacheFirst` convient, chaque envoi change d'adresse
+          // (`?v=`). Statut 0 accepté : un `<img>` sans `crossorigin` rend une
+          // réponse opaque. Les réponses de l'API, elles, ne sont pas mises en
+          // cache (`apiOrigins` vide) : la file d'envoi s'en charge.
+          runtimeCaching: [
+            {
+              urlPattern: /\/storage\/v1\/object\/public\/branding\//,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'arcade-marque',
+                expiration: {
+                  maxEntries: 60,
+                  maxAgeSeconds: 60 * 60 * 24 * 90,
+                },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+          ],
         })
       ),
 

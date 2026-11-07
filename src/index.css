@@ -35,10 +35,12 @@
  * contraste.
  */
 @theme {
-  /* #1d826a et non #1f8a70 : 4,72:1 avec le blanc, contre 4,26:1 (WCAG 1.4.3, seuil
-     4,5:1). axe le mesurait sur les boutons, la navigation du bas et les pastilles du
-     socle, qui peignent `--dwc-primary-contrast` sur `--dwc-primary`. */
-  --color-primary: #1d826a;
+  /* #18765f, et non plus #1d826a (07/11/2026) : le primaire sert AUSSI de texte, sur
+     le fond de page, dans les boutons « contour » posés hors carte. #1d826a passait
+     le blanc (4,72:1) mais pas le fond (4,20:1 sur #eef3f1) : axe l'a relevé sur
+     le lien « Paramétrer mon jeu » de l'accueil. #18765f tient les quatre paires :
+     5,53 sur le blanc, 4,93 sur le fond, 4,55 sur surface-2, et le blanc dessus. */
+  --color-primary: #18765f;
   --color-primary-soft: #d5efe8;
   --radius-card: 0.875rem;
 }
@@ -54,7 +56,7 @@
   --dwc-text-soft: #4f635c;
   --dwc-border: #c9d6d0;
   --dwc-border-strong: #6e7f78;
-  --dwc-primary: #1d826a; /* même teinte que --color-primary, voir @theme */
+  --dwc-primary: #18765f; /* même teinte que --color-primary, voir @theme */
   --dwc-primary-contrast: #ffffff;
   --dwc-danger: #b3261e;
   --dwc-success: #1b6b3a;
@@ -95,31 +97,56 @@ body {
 }
 
 /*
- * LA BARRE BASSE EST COLLÉE PAR UNE PROP, PAS PAR UNE RÈGLE.
- *
- * Jusqu'au socle 4.2, cette feuille collait la barre au bas de la fenêtre
- * (`position: fixed`) et réservait sa hauteur sous le contenu — et huit dépôts
- * du parc portaient la même règle, recopiée. Depuis 4.3.0, le choix se fait là
- * où la mise en page se lit, dans `App.tsx` : `<BottomNav placement="fixed">`
- * colle la barre, `<PageContainer reserve="bottom-nav">` dégage la place
- * dessous, zone sûre iOS comprise. Ce fichier n'a plus rien à dire sur elle.
- *
- * SAUF CECI, ET C'EST UNE COLLISION DU SOCLE. La zone de notification
- * (`toast-viewport`) est collée en `bottom: 0` avec un `z-index` de 70, la
- * barre basse fixe au même endroit avec 20 : une notification recouvre la
- * navigation, exactement comme le bandeau de mise à jour passait SOUS elle
- * chez mister-miss-koh. Ici on la remonte de la hauteur réservée par
- * `reserve="bottom-nav"` — la même valeur, au même endroit. Le jour où le
- * socle saura placer sa zone au-dessus d'une barre déclarée, ces quatre
- * lignes disparaissent.
- *
- * Non layered : ce fichier gagne de plein droit sur `@layer components`.
+ * La zone des notifications n'a plus de règle ici : le socle la place au-dessus
+ * de la barre basse (`--_dwc-bottom-clearance`), comme le squelette l'a relevé
+ * (pwa-starter-kit#122). La remonter une seconde fois la décollait du bas.
  */
-[data-dwc='toast-viewport'] {
-  padding-bottom: calc(
-    4.5rem + var(--spacing-fluid-sm, 0.75rem) +
-      max(env(safe-area-inset-bottom), 0px)
-  );
+
+/* —— Utilitaires de texte (au lieu de `style={{ color: … }}` recopié) —— */
+.text-soft {
+  color: var(--dwc-text-soft);
+}
+
+.text-danger {
+  color: var(--dwc-danger);
+}
+
+/* —— La scène du jeu —— */
+.arcade-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.arcade-spin-btn {
+  min-width: 12rem;
+  font-size: 1.125rem;
+}
+
+.arcade-result {
+  position: relative;
+}
+
+.arcade-redeem {
+  padding: 0.75rem 1.25rem;
+  border: 2px dashed var(--arcade-gold);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--arcade-gold) 10%, transparent);
+}
+
+.arcade-consent {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.arcade-consent input {
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-top: 0.1rem;
 }
 
 /* —— Bandit manchot —— */
@@ -141,14 +168,15 @@ body {
 }
 
 .arcade-reel {
-  width: min(28vw, 5.5rem);
-  height: min(28vw, 5.5rem);
+  width: min(26vw, 6.5rem);
+  height: min(26vw, 6.5rem);
   display: grid;
   place-items: center;
+  overflow: hidden;
   border-radius: 0.65rem;
   background: linear-gradient(180deg, #f8faf9, #dfe8e4);
   color: var(--arcade-frame);
-  font-size: clamp(1.75rem, 8vw, 2.75rem);
+  font-size: clamp(1.75rem, 8vw, 3rem);
   font-weight: 700;
   box-shadow: inset 0 -6px 12px rgb(20 32 28 / 12%);
 }
@@ -168,29 +196,24 @@ body {
   }
 }
 
-.arcade-spin-btn {
-  min-width: 10rem;
-  font-size: 1.125rem;
-}
-
 /* —— Roue —— */
 .arcade-wheel-stage {
   position: relative;
-  width: min(100%, 18rem);
+  width: min(100%, 22rem);
   margin-inline: auto;
   aspect-ratio: 1;
 }
 
 .arcade-wheel-pointer {
   position: absolute;
-  top: -0.35rem;
+  top: -0.4rem;
   left: 50%;
   z-index: 2;
   width: 0;
   height: 0;
-  border-left: 0.65rem solid transparent;
-  border-right: 0.65rem solid transparent;
-  border-top: 1.1rem solid var(--arcade-gold);
+  border-left: 0.8rem solid transparent;
+  border-right: 0.8rem solid transparent;
+  border-top: 1.3rem solid var(--arcade-gold);
   transform: translateX(-50%);
   filter: drop-shadow(0 2px 2px rgb(0 0 0 / 25%));
 }
@@ -200,24 +223,70 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 4px solid var(--arcade-frame);
+  border: 5px solid var(--arcade-frame);
   box-shadow: 0 10px 24px rgb(20 32 28 / 22%);
 }
 
+/* Chaque libellé est une colonne pivotée autour du centre, lue du bord vers
+   le centre : symbole près de la jante, nom du lot dessous. */
 .arcade-wheel-label {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1.5rem;
-  margin-left: -0.75rem;
-  margin-top: -0.75rem;
-  text-align: center;
-  font-size: 1.25rem;
-  font-weight: 700;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 6%;
   color: #fff;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 45%);
-  transform-origin: center center;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 55%);
   pointer-events: none;
+}
+
+.arcade-wheel-symbol {
+  font-size: clamp(1.1rem, 4.5vw, 1.75rem);
+  line-height: 1;
+}
+
+.arcade-wheel-text {
+  max-width: 5.5em;
+  margin-top: 0.25rem;
+  overflow: hidden;
+  font-size: clamp(0.7rem, 2.6vw, 0.95rem);
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* —— Confettis —— */
+.arcade-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.arcade-confetti-piece {
+  position: absolute;
+  top: -1rem;
+  left: var(--x);
+  width: 0.55rem;
+  height: 0.85rem;
+  border-radius: 2px;
+  animation: arcade-fall 1.8s ease-in var(--delay) forwards;
+  opacity: 0;
+}
+
+@keyframes arcade-fall {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift), 105vh) rotate(var(--turn));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -228,26 +297,322 @@ body {
   .arcade-wheel-disc {
     transition: none !important;
   }
+
+  .arcade-confetti {
+    display: none;
+  }
 }
 
-/* —— Borne publique + branding —— */
-.arcade-play-surface {
-  margin: -0.5rem -0.25rem 0;
-  padding: 1rem 0.25rem 0;
-  border-radius: 1rem;
-  background-size: cover;
+/* —— La borne (`/j/<client>`), plein écran, sans coquille —— */
+.arcade-kiosk {
+  --arcade-ink: var(--dwc-text);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem
+    max(1.5rem, env(safe-area-inset-bottom));
+  background-color: var(--dwc-bg);
   background-position: center;
-  min-height: 60vh;
+  background-size: cover;
+  color: var(--arcade-ink);
 }
 
-.arcade-play-logo {
-  display: block;
-  max-height: 3.5rem;
-  max-width: 12rem;
-  margin: 0 auto 1rem;
+/* Un voile assure la lecture du texte blanc sur n'importe quelle photo. */
+.arcade-kiosk.has-wallpaper {
+  --arcade-ink: #fff;
+  background-image:
+    linear-gradient(rgb(12 20 17 / 50%), rgb(12 20 17 / 68%)),
+    var(--arcade-wall-desktop);
+}
+
+@media (max-width: 640px), (orientation: portrait) and (max-width: 900px) {
+  .arcade-kiosk.has-wallpaper {
+    background-image:
+      linear-gradient(rgb(12 20 17 / 50%), rgb(12 20 17 / 68%)),
+      var(--arcade-wall-mobile);
+  }
+}
+
+.arcade-kiosk.has-wallpaper .arcade-welcome,
+.arcade-kiosk.has-wallpaper .arcade-result-message,
+.arcade-kiosk.has-wallpaper .arcade-kiosk-title {
+  text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+}
+
+/* Le formulaire garde une surface claire : des champs sur photo se lisent mal. */
+.arcade-kiosk .arcade-lead {
+  padding: 1rem;
+  border-radius: var(--radius-card);
+  background: var(--dwc-surface);
+  color: var(--dwc-text);
+}
+
+.arcade-kiosk-head {
+  display: flex;
+  justify-content: center;
+  padding-block: 0.5rem 1rem;
+}
+
+.arcade-kiosk-logo {
+  max-height: clamp(3rem, 12vh, 7rem);
+  max-width: min(60vw, 20rem);
   object-fit: contain;
 }
 
+.arcade-kiosk-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  text-align: center;
+}
+
+.arcade-kiosk-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: min(100%, 44rem);
+  margin-inline: auto;
+}
+
+.arcade-kiosk-main .arcade-welcome {
+  font-size: clamp(1.25rem, 3.5vw, 2rem);
+}
+
+.arcade-kiosk-main .arcade-spin-btn {
+  min-height: 4rem;
+  min-width: 16rem;
+  font-size: 1.35rem;
+}
+
+.arcade-kiosk-note {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--dwc-surface);
+  color: var(--dwc-text);
+}
+
+.arcade-kiosk-error {
+  padding: 1.5rem;
+  border-radius: var(--radius-card);
+  background: var(--dwc-surface);
+  color: var(--dwc-text);
+}
+
+/* Le menu : une cible de 48 px, discrète, dans le coin. */
+.arcade-kiosk-menu {
+  position: absolute;
+  top: max(0.5rem, env(safe-area-inset-top));
+  right: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dwc-surface) 55%, transparent);
+  color: var(--dwc-text);
+  opacity: 0.7;
+  touch-action: none;
+  user-select: none;
+}
+
+.arcade-kiosk-menu:focus-visible {
+  outline: 3px solid var(--dwc-primary);
+  opacity: 1;
+}
+
+.arcade-kiosk-sync {
+  position: absolute;
+  left: 0.75rem;
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+.arcade-kiosk-start {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(12 20 17 / 72%);
+}
+
+.arcade-kiosk-start-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 28rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-card);
+  background: var(--dwc-surface);
+  color: var(--dwc-text);
+  text-align: center;
+}
+
+/* —— Administration —— */
+/* Huit rubriques ne tiennent pas sur une ligne de téléphone : elles passent à
+   la ligne plutôt que d'être rognées (« Dor… » au relevé du 07/11/2026). */
+.arcade-admin-tabs {
+  flex-wrap: wrap;
+  border-radius: 1.25rem;
+}
+
+.arcade-savebar {
+  position: sticky;
+  bottom: calc(5rem + max(env(safe-area-inset-bottom), 0px));
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--dwc-border-strong);
+  border-radius: var(--radius-card);
+  background: var(--dwc-surface);
+  box-shadow: 0 8px 24px rgb(20 32 28 / 18%);
+}
+
+.arcade-prize-swatch {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-top: 1.6rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 45%);
+}
+
+.arcade-table-wrap {
+  overflow-x: auto;
+}
+
+.arcade-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.arcade-table th,
+.arcade-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--dwc-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.arcade-table th {
+  color: var(--dwc-text-soft);
+  font-weight: 600;
+}
+
+.arcade-meter-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 8rem;
+}
+
+.arcade-meter {
+  display: block;
+  height: 0.6rem;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+  background: var(--dwc-primary);
+}
+
+.arcade-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem;
+}
+
+/* Barres : une teinte, 2 px d'écart, bouts arrondis, axe discret. */
+.arcade-bars-plot {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--dwc-border);
+}
+
+.arcade-bars-col {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  height: 100%;
+  outline: none;
+}
+
+.arcade-bars-bar {
+  display: block;
+  width: 100%;
+  min-height: 1px;
+  border-radius: 4px 4px 0 0;
+  background: var(--dwc-primary);
+}
+
+.arcade-bars-col:hover .arcade-bars-bar,
+.arcade-bars-col:focus-visible .arcade-bars-bar {
+  background: color-mix(in srgb, var(--dwc-primary) 75%, var(--dwc-text));
+}
+
+.arcade-bars-tick {
+  position: absolute;
+  bottom: -1.25rem;
+  left: 50%;
+  color: var(--dwc-text-soft);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.arcade-bars-tip {
+  position: absolute;
+  bottom: calc(100% + 0.25rem);
+  left: 50%;
+  z-index: 3;
+  display: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  background: var(--dwc-text);
+  color: var(--dwc-surface);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.arcade-bars-col:hover .arcade-bars-tip,
+.arcade-bars-col:focus-visible .arcade-bars-tip {
+  display: block;
+}
+
+.arcade-bars-col:focus-visible {
+  box-shadow: 0 0 0 2px var(--dwc-primary);
+}
+
+.arcade-qr {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.arcade-link {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+
+/* —— Aperçus de marque —— */
 .arcade-branding-previews {
   display: flex;
   flex-wrap: wrap;
@@ -256,14 +621,14 @@ body {
 }
 
 .arcade-preview {
-  margin: 0;
   flex: 1 1 10rem;
+  margin: 0;
 }
 
 .arcade-preview figcaption {
   margin-top: 0.5rem;
-  font-size: 0.875rem;
   color: var(--dwc-text-soft);
+  font-size: 0.875rem;
   text-align: center;
 }
 
@@ -271,12 +636,12 @@ body {
   position: relative;
   display: grid;
   place-items: center;
-  border-radius: 0.75rem;
-  border: 1px solid var(--dwc-border);
-  background: linear-gradient(160deg, #243832, #0f1a16);
-  background-size: cover;
-  background-position: center;
   overflow: hidden;
+  border: 1px solid var(--dwc-border);
+  border-radius: 0.75rem;
+  background: linear-gradient(160deg, #243832, #0f1a16);
+  background-position: center;
+  background-size: cover;
 }
 
 .arcade-preview--desktop .arcade-preview-frame {
@@ -284,9 +649,9 @@ body {
 }
 
 .arcade-preview--mobile .arcade-preview-frame {
-  aspect-ratio: 9 / 16;
   max-width: 9rem;
   margin-inline: auto;
+  aspect-ratio: 9 / 16;
 }
 
 .arcade-preview-logo {

@@ -1,5 +1,10 @@
 # 0010 — Écrire hors ligne : une file, sur le port, pas dans l'adaptateur
 
+> **Dans miss-arcade (07/11/2026)** : les notes du squelette, sur lesquelles
+> cette décision s'appuie, sont parties avec la migration 0008. Le motif reste :
+> la file enveloppe désormais le port de l'arcade (tirages hors ligne et leads),
+> voir [0014](./0014-file-d-envoi-hors-ligne.md).
+
 ## Contexte
 
 Le socle porte trois pièces pour l'écriture hors ligne : `sync-queue`,
