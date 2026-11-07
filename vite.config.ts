@@ -113,7 +113,7 @@ export default defineConfig(({ command }) => {
           name: 'Miss Arcade',
           shortName: 'Miss Arcade',
           description:
-            'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots ponderes, messages personnalises, formulaire leads, utilisable hors ligne.',
+            'Jeux tactiles pour stand et point de vente : bandit manchot et roue, lots pondérés, messages personnalisés, formulaire leads, utilisable hors ligne.',
           // LES IMAGES DE MARQUE D'UNE BORNE, GARDÉES POUR LE HORS LIGNE. Fond
           // et logo vivent dans le Storage Supabase, hors du précache : sans
           // cette règle, une borne qui perdait le réseau perdait aussi sa
