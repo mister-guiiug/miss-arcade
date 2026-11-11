@@ -51,9 +51,11 @@ importée dans `src/index.css` : ne pas la retirer.
 | `src/features/arcade/backend/`   | Le port, l'adaptateur local et l'adaptateur Supabase  |
 | `src/features/arcade/sync/`      | La file d'envoi hors ligne et son panneau             |
 | `src/features/arcade/play/`      | Le jeu : magasin, scène, bobines, roue, formulaire    |
+| `src/features/arcade/icons/`     | Les jeux d'icônes : dessins, face de chaque lot       |
 | `src/features/arcade/kiosk/`     | La borne : écran, appairage, code, retour à l'accueil |
 | `src/features/arcade/admin/`     | L'administration (morceau différé)                    |
 | `supabase/migrations/0008_*.sql` | Tirages, bornes, leads, sauvegarde atomique, purge    |
+| `supabase/migrations/0009_*.sql` | Le jeu d'icônes et les dessins et images des lots     |
 
 ## Modifier
 

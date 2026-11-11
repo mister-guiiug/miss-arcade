@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0 (12/11/2026)
+
+### Ajouté
+
+- Trois jeux d'icônes pour les lots, au choix de l'admin dans « Lots » :
+  **Symboles** (l'affichage d'avant), **Dessins** (seize illustrations
+  dessinées pour l'arcade, à choisir lot par lot) et **Mes images** (une image
+  par lot, envoyée par l'admin). Les bobines, la roue et l'aperçu des lots
+  suivent le jeu choisi.
+- Les dessins font partie de l'application : une borne hors ligne les affiche.
+  Les images sont réduites à 256 px avant l'envoi, et préchargées par la borne
+  pour le hors ligne ; une image qui ne vient pas laisse place au symbole.
+
+### Base de données
+
+- Migration 0009 : le jeu d'icônes de chaque client, le dessin et l'image de
+  chaque lot. Changer de jeu n'efface rien, et une administration ouverte sur
+  l'ancienne version n'efface pas les dessins ni les images en enregistrant.
+
 ## 0.2.1 (07/11/2026)
 
 ### Corrigé

@@ -1,27 +1,46 @@
 import type { Prize, SpinOutcome } from '../model.ts';
+import type { Face, FaceOf } from '../icons/faces.ts';
 
-export type Faces = [string, string, string];
+export type Faces = [Face, Face, Face];
 
-export function pickSymbol(prizes: readonly Prize[], exclude?: string): string {
-  const pool = prizes.filter(p => p.symbol !== exclude);
-  const list = pool.length > 0 ? pool : prizes;
-  return list[Math.floor(Math.random() * list.length)]?.symbol ?? '★';
+const PLACEHOLDER: Face = { kind: 'text', key: 't:★', text: '★' };
+
+/**
+ * Une face au hasard parmi les lots, sauf celle qu'il faut éviter. La
+ * comparaison porte sur ce qui SE VOIT (`key`), pas sur le lot : deux lots au
+ * même dessin feraient sinon un faux alignement sur un tirage perdant.
+ */
+export function pickFace(
+  prizes: readonly Prize[],
+  faceOf: FaceOf,
+  excludeKey?: string
+): Face {
+  const faces = prizes.map(faceOf);
+  const pool = faces.filter(f => f.key !== excludeKey);
+  const list = pool.length > 0 ? pool : faces;
+  return list[Math.floor(Math.random() * list.length)] ?? PLACEHOLDER;
 }
 
-/** Les trois symboles d'arrivée : trois fois le lot gagné, ou un alignement raté. */
+/** Les trois faces d'arrivée : trois fois le lot gagné, ou un alignement raté. */
 export function landingFaces(
   prizes: readonly Prize[],
-  outcome: SpinOutcome
+  outcome: SpinOutcome,
+  faceOf: FaceOf
 ): Faces {
-  const symbol = outcome.prize.symbol;
+  const face = faceOf(outcome.prize);
   return outcome.prize.lose
-    ? [pickSymbol(prizes, symbol), symbol, pickSymbol(prizes, symbol)]
-    : [symbol, symbol, symbol];
+    ? [
+        pickFace(prizes, faceOf, face.key),
+        face,
+        pickFace(prizes, faceOf, face.key),
+      ]
+    : [face, face, face];
 }
 
-export function restingFaces(prizes: readonly Prize[]): Faces {
-  const first = prizes.find(p => !p.lose)?.symbol ?? '★';
-  return [first, first, first];
+export function restingFaces(prizes: readonly Prize[], faceOf: FaceOf): Faces {
+  const first = prizes.find(p => !p.lose);
+  const face = first ? faceOf(first) : PLACEHOLDER;
+  return [face, face, face];
 }
 
 /** Angle d'arrivée (degrés, sens horaire) pour que le pointeur tombe sur la part `index`. */

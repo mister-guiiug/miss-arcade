@@ -40,6 +40,21 @@ test.describe('@a11y accessibilité', () => {
     }
   });
 
+  test('les lots en dessins, catalogue déplié, sans violation', async ({
+    page,
+  }) => {
+    await page.goto('/admin/lots');
+    await page.getByRole('tab', { name: 'Dessins' }).click();
+    await page
+      .getByText(/^Dessin : /)
+      .first()
+      .click();
+    await expect(
+      page.getByRole('radio', { name: 'Étoile' }).first()
+    ).toBeAttached();
+    await expectNoA11yViolations(page, AxeBuilder, expect);
+  });
+
   test('À propos : coquille + FamilyAbout sans violation', async ({ page }) => {
     await page.goto('/a-propos');
     await expect(page.locator('[data-dwc="family-about"]')).toBeVisible();

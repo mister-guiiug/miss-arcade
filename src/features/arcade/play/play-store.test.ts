@@ -36,6 +36,8 @@ const game: PublicGame = {
       stock: 3,
       color: '#1f8a70',
       symbol: '★',
+      drawing: null,
+      image: null,
       lose: false,
     },
   ],

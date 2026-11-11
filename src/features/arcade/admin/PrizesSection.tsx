@@ -6,7 +6,10 @@ import { TextField } from '@mister-guiiug/dev-pwa-config/react/field';
 import { useToast } from '@mister-guiiug/dev-pwa-config/react/toast';
 import { useI18n } from '../../../i18n/index.ts';
 import { chances, isDrawable, type Prize } from '../model.ts';
+import { defaultDrawings, faceResolver } from '../icons/faces.ts';
+import { PrizeIcon } from '../icons/PrizeIcon.tsx';
 import { useAdmin } from './admin-store.ts';
+import { DrawingPicker, IconSetPicker, ImagePicker } from './IconFields.tsx';
 
 /** Sous ce seuil, le stock est signalé. */
 const LOW_STOCK = 5;
@@ -32,6 +35,9 @@ export function PrizesSection() {
   if (!draft) return null;
   const odds = chances(draft.prizes);
   const full = draft.prizes.length >= 12;
+  const { iconSet } = draft.config;
+  const faceOf = faceResolver(draft.prizes, iconSet);
+  const drawings = defaultDrawings(draft.prizes);
 
   const remove = (prize: Prize) => {
     const index = draft.prizes.findIndex(p => p.id === prize.id);
@@ -59,6 +65,7 @@ export function PrizesSection() {
           </Button>
         }
       />
+      <IconSetPicker value={iconSet} />
       {!draft.prizes.some(isDrawable) ? (
         <p role="alert" className="text-danger m-0 mb-3 text-sm">
           {t('adminPrizes.noneDrawable')}
@@ -83,7 +90,7 @@ export function PrizesSection() {
                   style={{ background: prize.color }}
                   aria-hidden="true"
                 >
-                  {prize.symbol}
+                  <PrizeIcon face={faceOf(prize)} />
                 </span>
                 <TextField
                   label={t('adminPrizes.label')}
@@ -158,16 +165,23 @@ export function PrizesSection() {
                     });
                   }}
                 />
-                <TextField
-                  label={t('adminPrizes.symbol')}
-                  value={prize.symbol}
-                  maxLength={4}
-                  onChange={e =>
-                    setPrize(prize.id, {
-                      symbol: e.target.value.slice(0, 4) || '·',
-                    })
-                  }
-                />
+                {iconSet === 'dessin' ? null : (
+                  <TextField
+                    label={t('adminPrizes.symbol')}
+                    hint={
+                      iconSet === 'perso'
+                        ? t('adminPrizes.symbolFallback')
+                        : undefined
+                    }
+                    value={prize.symbol}
+                    maxLength={4}
+                    onChange={e =>
+                      setPrize(prize.id, {
+                        symbol: e.target.value.slice(0, 4) || '·',
+                      })
+                    }
+                  />
+                )}
                 <TextField
                   label={t('adminPrizes.color')}
                   type="color"
@@ -175,6 +189,13 @@ export function PrizesSection() {
                   onChange={e => setPrize(prize.id, { color: e.target.value })}
                 />
               </div>
+              {iconSet === 'dessin' ? (
+                <DrawingPicker
+                  prize={prize}
+                  current={drawings.get(prize.id) ?? 'etoile'}
+                />
+              ) : null}
+              {iconSet === 'perso' ? <ImagePicker prize={prize} /> : null}
               <div className="flex flex-wrap items-center gap-3">
                 <label className="flex items-center gap-2 text-sm">
                   <input

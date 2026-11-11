@@ -34,6 +34,7 @@ personne à la rediscuter.
 | [0013](./0013-tirage-serveur-et-bornes.md)      | Le serveur décide du tirage ; la borne appairée tire hors ligne      |
 | [0014](./0014-file-d-envoi-hors-ligne.md)       | Une file d'envoi, pas une pile ; les coordonnées n'y font que passer |
 | [0015](./0015-leads-consentement-et-borne.md)   | Un lead par tirage, un consentement daté ; la borne à part           |
+| [0016](./0016-jeux-d-icones.md)                 | Trois jeux d'icônes ; chaque lot garde ses trois valeurs             |
 
 ## Quand une application s'écarte
 

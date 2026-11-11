@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { Prize } from '../model.ts';
-import { pickSymbol, restingFaces, type Faces } from './animation.ts';
+import type { FaceOf } from '../icons/faces.ts';
+import { PrizeIcon } from '../icons/PrizeIcon.tsx';
+import { pickFace, restingFaces, type Faces } from './animation.ts';
 
 const TICK_MS = 80;
 
 /**
  * Trois bobines. Elles tournent dès l'appui, AVANT que le serveur réponde :
  * le joueur voit son geste pris en compte tout de suite. Elles s'arrêtent sur
- * le symbole du lot tiré, jamais l'inverse (animer puis « choisir » mentirait
+ * la face du lot tiré, jamais l'inverse (animer puis « choisir » mentirait
  * sur les probabilités).
  *
  * Purement visuelles : `aria-hidden`, le résultat est annoncé ailleurs. Une
@@ -16,12 +18,15 @@ const TICK_MS = 80;
  */
 export function BanditReels({
   prizes,
+  faceOf,
   spinning,
   landing,
 }: {
   prizes: readonly Prize[];
+  /** Le jeu d'icônes appliqué (`faceResolver`). */
+  faceOf: FaceOf;
   spinning: boolean;
-  /** Les symboles d'arrivée, ou `null` au repos. */
+  /** Les faces d'arrivée, ou `null` au repos. */
   landing: Faces | null;
 }) {
   const [ticking, setTicking] = useState<Faces | null>(null);
@@ -29,14 +34,18 @@ export function BanditReels({
   useEffect(() => {
     if (!spinning) return undefined;
     const timer = window.setInterval(() => {
-      setTicking([pickSymbol(prizes), pickSymbol(prizes), pickSymbol(prizes)]);
+      setTicking([
+        pickFace(prizes, faceOf),
+        pickFace(prizes, faceOf),
+        pickFace(prizes, faceOf),
+      ]);
     }, TICK_MS);
     return () => window.clearInterval(timer);
-  }, [spinning, prizes]);
+  }, [spinning, prizes, faceOf]);
 
   const faces = spinning
-    ? (ticking ?? restingFaces(prizes))
-    : (landing ?? restingFaces(prizes));
+    ? (ticking ?? restingFaces(prizes, faceOf))
+    : (landing ?? restingFaces(prizes, faceOf));
 
   return (
     <div
@@ -45,7 +54,9 @@ export function BanditReels({
     >
       {faces.map((face, index) => (
         <div key={index} className="arcade-reel">
-          <span className="arcade-reel-face">{face}</span>
+          <span className="arcade-reel-face">
+            <PrizeIcon face={face} />
+          </span>
         </div>
       ))}
     </div>

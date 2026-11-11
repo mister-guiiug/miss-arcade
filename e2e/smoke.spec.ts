@@ -63,6 +63,36 @@ test.describe('@critical le cadre', () => {
     ).toBeVisible();
   });
 
+  test('l’admin passe aux dessins : les bobines les montrent, au repos et après un tirage', async ({
+    page,
+  }) => {
+    await page.goto('/admin/lots');
+    await page.getByRole('tab', { name: 'Dessins' }).click();
+    // Chaque lot reçoit un dessin à l'aperçu ; celui des goodies se change.
+    await page.getByText('Dessin : Cadeau. Changer').click();
+    // La vignette, comme le doigt : le bouton radio est caché sous elle.
+    await page.locator('details[open]').getByTitle('Cerises').click();
+    await expect(page.getByText('Dessin : Cerises. Changer')).toBeVisible();
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByText('Modifications enregistrées.')).toBeVisible();
+
+    await page.goto('/');
+    const reels = page.locator('.arcade-reel svg.arcade-icon');
+    await expect(reels).toHaveCount(3);
+    await page.getByRole('button', { name: 'Lancer' }).click();
+    await expect(page.locator('.arcade-result-message')).toBeVisible({
+      timeout: 8_000,
+    });
+    await expect(reels).toHaveCount(3);
+
+    // Revenir aux symboles retrouve les symboles : rien n'a été effacé.
+    await page.goto('/admin/lots');
+    await page.getByRole('tab', { name: 'Symboles' }).click();
+    await expect(
+      page.getByLabel('Symbole', { exact: true }).first()
+    ).toHaveValue('·');
+  });
+
   test('un joueur laisse ses coordonnées avec son accord ; l’admin les retrouve et les exporte', async ({
     page,
   }) => {

@@ -53,7 +53,7 @@ Ce guide ne remplace pas un conseil juridique. Le règlement d'un jeu concours r
 [Miss Arcade](https://mister-guiiug.github.io/miss-arcade/) fait tourner ce jeu sur une tablette, à vos couleurs.
 
 - **Roue de la fortune ou bandit manchot**, avec vos messages d'accueil, de gain et de perte, votre fond d'écran et votre logo.
-- **Jusqu'à 12 lots**, chacun avec son poids, son stock, sa couleur et son symbole. La chance de chaque lot au prochain tirage s'affiche pendant que vous réglez, et une case peut être déclarée perdante.
+- **Jusqu'à 12 lots**, chacun avec son poids, son stock, sa couleur et son icône : un symbole à saisir, un dessin du catalogue, ou votre propre image. La chance de chaque lot au prochain tirage s'affiche pendant que vous réglez, et une case peut être déclarée perdante.
 - **Un code de retrait à chaque gain** : six caractères, sans O, 0, I ni 1.
 - **Le formulaire après chaque partie**, gagnée ou perdue : les champs que vous choisissez (prénom, nom, e-mail, téléphone), une case d'accord non cochée avec votre texte, la durée de conservation et l'adresse où exercer ses droits. Le texte accepté et l'heure de l'accord sont gardés avec chaque contact.
 - **Les contacts dans l'administration** : recherche, export CSV, suppression un par un ou en bloc, et effacement chaque nuit au-delà de la durée choisie, de 30 jours à 5 ans.

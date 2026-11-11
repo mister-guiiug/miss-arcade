@@ -37,11 +37,16 @@ export function clearCachedGames(): void {
  * en cache à ce moment-là (règle `runtimeCaching` de `vite.config.ts`), et la
  * borne les retrouve hors ligne. L'image du format qu'on n'affiche pas (fond
  * téléphone sur un écran large) ne serait sinon jamais chargée.
+ *
+ * Les icônes du jeu `perso` aussi : au repos, la bobine ne montre que le
+ * premier lot, et l'image d'un lot rare n'apparaîtrait qu'à son premier
+ * tirage — peut-être hors ligne, donc jamais.
  */
 export function warmImages(game: PublicGame): void {
   if (typeof Image === 'undefined') return;
-  const { wallpaperDesktop, wallpaperMobile, logoUrl } = game.config;
-  for (const url of [wallpaperDesktop, wallpaperMobile, logoUrl]) {
+  const { wallpaperDesktop, wallpaperMobile, logoUrl, iconSet } = game.config;
+  const icons = iconSet === 'perso' ? game.prizes.map(p => p.image) : [];
+  for (const url of [wallpaperDesktop, wallpaperMobile, logoUrl, ...icons]) {
     if (url) new Image().src = url;
   }
 }
