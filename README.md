@@ -47,6 +47,18 @@ Poser `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` en **variables** du dépô
 partent en production à la fusion sur `main` (workflow « Supabase migrations »),
 et pgTAP les éprouve sur chaque PR (`supabase/tests`).
 
+- **Les adresses de retour de la connexion**, à poser une fois dans
+  Authentication → URL Configuration. Un projet neuf n'autorise que
+  `http://localhost:3000` : le lien reçu par e-mail ramène alors là, et la
+  connexion échoue sans message. L'app demande pourtant le bon retour
+  (`emailRedirectTo`) ; Supabase l'écarte s'il n'est pas dans la liste.
+  - Site URL : `https://mister-guiiug.github.io/miss-arcade/`
+  - Redirect URLs : `https://mister-guiiug.github.io/miss-arcade/**` et,
+    pour le développement, `http://localhost:5220/**`
+
+  Le lien se valide dans le navigateur où il a été demandé : la connexion
+  passe par PKCE, dont la clé ne quitte pas cet appareil.
+
 - **Les droits** viennent de la base (`arcade_whoami`) : le hook
   `custom_access_token_hook` n'est plus nécessaire pour ouvrir l'administration.
   Il recopie toujours les rôles dans le jeton, pour la pastille « Admin » de

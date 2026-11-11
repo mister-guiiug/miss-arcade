@@ -42,10 +42,14 @@ enabled = false
 [storage]
 enabled = true
 
+# Le port de `npm run dev` (5220, `.claude/launch.json`). 5240 était celui du
+# squelette : le lien de connexion de la pile locale ramenait vers une autre
+# application. Le projet HÉBERGÉ ne lit pas ce fichier : sa liste se règle
+# dans le tableau de bord (README, « Avec le serveur »).
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:5240"
-additional_redirect_urls = ["http://localhost:5240"]
+site_url = "http://localhost:5220"
+additional_redirect_urls = ["http://localhost:5220/**", "http://127.0.0.1:5220/**"]
 jwt_expiry = 3600
 enable_signup = true
 enable_anonymous_sign_ins = false
