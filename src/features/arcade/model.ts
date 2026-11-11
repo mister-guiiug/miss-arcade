@@ -16,6 +16,17 @@ export const GAME_TYPES = ['bandit', 'roue'] as const;
 export const gameTypeSchema = z.enum(GAME_TYPES);
 export type GameType = z.infer<typeof gameTypeSchema>;
 
+/**
+ * LES JEUX D'ICÔNES : comment un lot se montre sur les bobines et la roue.
+ * `symboles`, le texte libre de chaque lot (l'affichage d'avant 0009) ;
+ * `dessin`, une illustration du catalogue embarqué dans l'application ;
+ * `perso`, une image envoyée par l'admin. Chaque lot garde ses trois valeurs :
+ * changer de jeu d'icônes n'efface rien (ADR 0016).
+ */
+export const ICON_SETS = ['symboles', 'dessin', 'perso'] as const;
+export const iconSetSchema = z.enum(ICON_SETS);
+export type IconSet = z.infer<typeof iconSetSchema>;
+
 export const LEAD_FIELDS = ['prenom', 'nom', 'email', 'telephone'] as const;
 export const leadFieldSchema = z.enum(LEAD_FIELDS);
 export type LeadField = z.infer<typeof leadFieldSchema>;
@@ -40,6 +51,21 @@ export const prizeSchema = z.object({
   color: colorSchema,
   /** Symbole des bobines et des parts de la roue (emoji ou 1 à 4 caractères). */
   symbol: z.string().min(1).max(4),
+  /**
+   * L'illustration du jeu `dessin`, par son nom. Le nom n'est pas une liste
+   * fermée ici : un nom inconnu de cette version retombe sur une illustration
+   * par défaut, au lieu de refuser toute la configuration.
+   *
+   * Les deux champs qui suivent ont une valeur par défaut : un serveur d'avant
+   * 0009, ou un jeu gardé en cache par une borne, ne les rend pas.
+   */
+  drawing: z
+    .string()
+    .regex(/^[a-z0-9-]{1,32}$/)
+    .nullable()
+    .default(null),
+  /** L'image du jeu `perso` ; `null` : le symbole la remplace. */
+  image: imageUrlSchema.default(null),
   /** Case perdante : message d'échec, aucun stock à décompter. */
   lose: z.boolean(),
 });
@@ -47,6 +73,7 @@ export type Prize = z.infer<typeof prizeSchema>;
 
 export const gameConfigSchema = z.object({
   activeGame: gameTypeSchema,
+  iconSet: iconSetSchema.default('symboles'),
   welcomeMessage: z.string().max(500),
   winMessage: z.string().max(500),
   loseMessage: z.string().max(500),
@@ -219,6 +246,7 @@ export const DEFAULT_CONSENT =
 export function defaultConfig(): GameConfig {
   return {
     activeGame: 'bandit',
+    iconSet: 'symboles',
     welcomeMessage: 'Tentez votre chance !',
     winMessage: 'Bravo, vous gagnez {lot} !',
     loseMessage: 'Pas de chance cette fois… Retentez plus tard !',
@@ -250,6 +278,8 @@ export function defaultPrizes(): Prize[] {
       stock: null,
       color: '#3d4a5c',
       symbol: '·',
+      drawing: 'nuage',
+      image: null,
       lose: true,
     },
     {
@@ -259,6 +289,8 @@ export function defaultPrizes(): Prize[] {
       stock: 40,
       color: '#1f8a70',
       symbol: '★',
+      drawing: 'cadeau',
+      image: null,
       lose: false,
     },
     {
@@ -268,6 +300,8 @@ export function defaultPrizes(): Prize[] {
       stock: 20,
       color: '#c45c26',
       symbol: '%',
+      drawing: 'etiquette',
+      image: null,
       lose: false,
     },
     {
@@ -277,6 +311,8 @@ export function defaultPrizes(): Prize[] {
       stock: 3,
       color: '#c9a227',
       symbol: '◆',
+      drawing: 'diamant',
+      image: null,
       lose: false,
     },
   ];

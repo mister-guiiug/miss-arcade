@@ -102,6 +102,8 @@ export function migrateV2(data: unknown): LocalState {
           ? String(p.color)
           : '#1f8a70',
         symbol: String(p.symbol ?? '★'),
+        drawing: null,
+        image: null,
         lose: Boolean(p.lose),
       }))
     : defaultPrizes();
@@ -359,6 +361,8 @@ export function createLocalBackend(): ArcadeBackend {
         stock: null,
         color: '#3d4a5c',
         symbol: '?',
+        drawing: null,
+        image: null,
       };
       return {
         spinId: spin.id,
@@ -480,6 +484,9 @@ export function createLocalBackend(): ArcadeBackend {
     },
 
     async uploadBranding() {
+      return unsupported();
+    },
+    async uploadIcon() {
       return unsupported();
     },
     async listKiosks() {

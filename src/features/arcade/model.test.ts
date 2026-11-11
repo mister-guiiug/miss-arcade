@@ -24,6 +24,8 @@ const lot = (
   stock,
   color: '#000000',
   symbol: '·',
+  drawing: null,
+  image: null,
   lose,
 });
 

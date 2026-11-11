@@ -59,7 +59,7 @@ interface ArcadeClient {
     from(bucket: string): {
       upload(
         path: string,
-        file: File,
+        file: Blob,
         options?: { upsert?: boolean; contentType?: string }
       ): Promise<{ error: PostgrestFailure | null }>;
       getPublicUrl(path: string): { data: { publicUrl: string } };
@@ -100,6 +100,29 @@ async function run(
   const result = await query;
   if (result.error) throw fromPostgrest(result.error, result.status);
   return result;
+}
+
+/**
+ * Dépose une image dans le bucket `branding`, à `<base>.<ext>`, et rend son
+ * adresse publique. Le `?v=` change à chaque envoi : le service worker garde
+ * les images en `CacheFirst`, une adresse inchangée servirait l'ancienne.
+ */
+async function upload(base: string, file: Blob): Promise<string> {
+  const client = await db();
+  const ext =
+    file.type === 'image/png'
+      ? 'png'
+      : file.type === 'image/webp'
+        ? 'webp'
+        : 'jpg';
+  const path = `${base}.${ext}`;
+  const bucket = client.storage.from('branding');
+  const { error } = await bucket.upload(path, file, {
+    upsert: true,
+    contentType: file.type,
+  });
+  if (error) throw fromPostgrest(error);
+  return `${bucket.getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
 }
 
 const statusSchema = z.object({ status: z.string() }).loose();
@@ -296,23 +319,14 @@ export function createSupabaseBackend(): ArcadeBackend {
         p_tz: timeZone,
       }),
 
-    async uploadBranding(tenantId, kind, file) {
-      const client = await db();
-      const ext =
-        file.type === 'image/png'
-          ? 'png'
-          : file.type === 'image/webp'
-            ? 'webp'
-            : 'jpg';
-      const path = `${tenantId}/${kind}.${ext}`;
-      const bucket = client.storage.from('branding');
-      const { error } = await bucket.upload(path, file, {
-        upsert: true,
-        contentType: file.type,
-      });
-      if (error) throw fromPostgrest(error);
-      return `${bucket.getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
-    },
+    uploadBranding: (tenantId, kind, file) =>
+      upload(`${tenantId}/${kind}`, file),
+
+    // Même bucket, même politique (le premier segment du chemin est le
+    // client) : la règle `runtimeCaching` qui garde la marque pour le hors
+    // ligne garde aussi les icônes.
+    uploadIcon: (tenantId, prizeId, file) =>
+      upload(`${tenantId}/icones/${prizeId.replace(/[^\w-]/g, '')}`, file),
 
     async listKiosks(tenantId) {
       const client = await db();

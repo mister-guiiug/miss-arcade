@@ -10,10 +10,13 @@ import {
   type Access,
   type AdminSnapshot,
   type GameConfig,
+  type IconSet,
   type Prize,
   type PrizeInput,
 } from '../model.ts';
 import { toArcadeError, type ArcadeErrorCode } from '../backend/errors.ts';
+import { defaultDrawings } from '../icons/faces.ts';
+import { isDrawingName } from '../icons/drawing-names.ts';
 
 const log = createLogger('admin');
 
@@ -50,6 +53,7 @@ interface AdminState {
   selectTenant: (tenantId: string) => Promise<void>;
   reload: () => Promise<void>;
   setConfig: (patch: Partial<GameConfig>) => void;
+  setIconSet: (iconSet: IconSet) => void;
   setPrize: (id: string, patch: Partial<Prize>) => void;
   addPrize: (label: string) => void;
   removePrize: (id: string) => Prize | null;
@@ -142,6 +146,30 @@ export const useAdmin = create<AdminState>((set, get) => ({
     });
   },
 
+  /**
+   * Passer aux dessins ÉCRIT le dessin de chaque lot qui n'en a pas : ce que
+   * l'admin voit dans l'aperçu est ce qui part à l'enregistrement, et ne
+   * bougera plus s'il réordonne ses lots. Les symboles et les images restent :
+   * revenir au jeu d'avant les retrouve.
+   */
+  setIconSet(iconSet) {
+    const draft = get().draft;
+    if (!draft) return;
+    const drawings = defaultDrawings(draft.prizes);
+    const prizes =
+      iconSet === 'dessin'
+        ? draft.prizes.map(p =>
+            isDrawingName(p.drawing)
+              ? p
+              : { ...p, drawing: drawings.get(p.id) ?? null }
+          )
+        : draft.prizes;
+    set({
+      draft: { ...draft, config: { ...draft.config, iconSet }, prizes },
+      dirty: true,
+    });
+  },
+
   setPrize(id, patch) {
     const draft = get().draft;
     if (!draft) return;
@@ -161,14 +189,21 @@ export const useAdmin = create<AdminState>((set, get) => ({
   addPrize(label) {
     const draft = get().draft;
     if (!draft || draft.prizes.length >= 12) return;
-    const prize: Prize = {
+    const blank: Prize = {
       id: newPrizeId(),
       label,
       weight: 10,
       stock: 10,
       color: COLORS[draft.prizes.length % COLORS.length]!,
       symbol: '★',
+      drawing: null,
+      image: null,
       lose: false,
+    };
+    // Un dessin que les autres lots n'ont pas, prêt pour le jeu `dessin`.
+    const prize: Prize = {
+      ...blank,
+      drawing: defaultDrawings([...draft.prizes, blank]).get(blank.id) ?? null,
     };
     set({
       draft: {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@mister-guiiug/dev-pwa-config/react/button';
 import { ErrorBanner } from '@mister-guiiug/dev-pwa-config/react/error-banner';
 import { useReducedMotion } from '@mister-guiiug/dev-pwa-config/react/use-media-query';
@@ -12,6 +12,7 @@ import { usePlay, type LeadResult } from './play-store.ts';
 import { BanditReels } from './BanditReels.tsx';
 import { Wheel } from './Wheel.tsx';
 import { finalRotation, landingFaces, type Faces } from './animation.ts';
+import { faceResolver } from '../icons/faces.ts';
 import { LeadForm } from './LeadForm.tsx';
 import { Celebration } from './Celebration.tsx';
 
@@ -56,6 +57,10 @@ export function GameStage({ kiosk }: { kiosk: boolean }) {
   const [transition, setTransition] = useState<string | undefined>();
   const rotationRef = useRef(0);
   const run = useRef(0);
+  const faceOf = useMemo(
+    () => faceResolver(game?.prizes ?? [], game?.config.iconSet ?? 'symboles'),
+    [game]
+  );
 
   const feedback = useFeedback(
     {
@@ -124,7 +129,7 @@ export function GameStage({ kiosk }: { kiosk: boolean }) {
       await wait(duration);
     } else {
       await wait(Math.max(0, duration - (Date.now() - started)));
-      setFaces(landingFaces(game.prizes, result));
+      setFaces(landingFaces(game.prizes, result, faceOf));
     }
     if (run.current !== token) return;
     setOutcome(result);
@@ -167,6 +172,7 @@ export function GameStage({ kiosk }: { kiosk: boolean }) {
       {isWheel ? (
         <Wheel
           slices={shownSlices}
+          faceOf={faceOf}
           rotation={rotation}
           transition={reduced ? undefined : transition}
           label={t('play.wheel', {
@@ -176,6 +182,7 @@ export function GameStage({ kiosk }: { kiosk: boolean }) {
       ) : (
         <BanditReels
           prizes={game.prizes}
+          faceOf={faceOf}
           spinning={phase === 'spinning'}
           landing={faces}
         />

@@ -55,7 +55,7 @@ export interface Capabilities {
   tenants: boolean;
   /** Appairer des bornes, tirer hors ligne. */
   kiosks: boolean;
-  /** Héberger des images de marque. */
+  /** Héberger des images : marque, et icônes du jeu `perso`. */
   branding: boolean;
   /** Exporter et importer un fichier de configuration. */
   dataFile: boolean;
@@ -91,6 +91,8 @@ export interface ArcadeBackend {
     kind: BrandingKind,
     file: File
   ): Promise<string>;
+  /** L'image d'un lot (jeu d'icônes `perso`) ; rend son adresse publique. */
+  uploadIcon(tenantId: string, prizeId: string, file: Blob): Promise<string>;
 
   listKiosks(tenantId: string): Promise<KioskRow[]>;
   createKiosk(

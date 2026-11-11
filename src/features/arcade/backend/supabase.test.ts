@@ -154,4 +154,29 @@ describe('l’adaptateur Supabase', () => {
       })
     );
   });
+
+  it('dépose l’image d’un lot sous le dossier de SON client, que la politique du bucket lit', async () => {
+    const upload = vi.fn(async () => ({ error: null }));
+    const getPublicUrl = vi.fn((path: string) => ({
+      data: { publicUrl: `https://p.supabase.co/branding/${path}` },
+    }));
+    const from = vi.fn(() => ({ upload, getPublicUrl }));
+    vi.spyOn(supabase, 'getClient').mockResolvedValue({
+      storage: { from },
+    } as never);
+    const url = await createSupabaseBackend().uploadIcon(
+      'b0000000-0000-0000-0000-00000000000a',
+      'lot_../../autre',
+      new Blob(['x'], { type: 'image/webp' })
+    );
+    expect(from).toHaveBeenCalledWith('branding');
+    // Le premier segment est le client (`branding_admin_insert`) ; un
+    // identifiant de lot ne remonte pas d'un dossier.
+    expect(upload).toHaveBeenCalledWith(
+      'b0000000-0000-0000-0000-00000000000a/icones/lot_autre.webp',
+      expect.any(Blob),
+      { upsert: true, contentType: 'image/webp' }
+    );
+    expect(url).toMatch(/\/icones\/lot_autre\.webp\?v=\d+$/);
+  });
 });

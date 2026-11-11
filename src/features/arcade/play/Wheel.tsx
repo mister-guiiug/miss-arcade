@@ -1,17 +1,21 @@
 import type { Prize } from '../model.ts';
+import type { FaceOf } from '../icons/faces.ts';
+import { PrizeIcon } from '../icons/PrizeIcon.tsx';
 
 /**
  * La roue, purement affichée : `GameStage` décide de la rotation et de sa
- * transition. Les parts portent le symbole ET le libellé : une roue de
- * symboles seuls ne dit pas au joueur ce qu'il peut gagner.
+ * transition. Les parts portent l'icône ET le libellé : une roue d'icônes
+ * seules ne dit pas au joueur ce qu'il peut gagner.
  */
 export function Wheel({
   slices,
+  faceOf,
   rotation,
   transition,
   label,
 }: {
   slices: readonly Prize[];
+  faceOf: FaceOf;
   rotation: number;
   transition: string | undefined;
   label: string;
@@ -44,7 +48,9 @@ export function Wheel({
             style={{ transform: `rotate(${(i + 0.5) * (360 / count)}deg)` }}
             aria-hidden="true"
           >
-            <span className="arcade-wheel-symbol">{prize.symbol}</span>
+            <span className="arcade-wheel-symbol">
+              <PrizeIcon face={faceOf(prize)} />
+            </span>
             <span className="arcade-wheel-text">{prize.label}</span>
           </span>
         ))}
