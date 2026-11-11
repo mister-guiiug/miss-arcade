@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1 (12/11/2026)
+
+### Corrigé
+
+- La connexion par lien aboutit de nouveau. À l'ouverture du lien, Supabase
+  refusait d'émettre la session : le hook qui copie les rôles dans le jeton
+  n'avait pas le droit de lire la table des administrateurs de client
+  (migration 0010). Le lien, consommé par cette tentative, répondait ensuite
+  « expiré ».
+
 ## 0.3.0 (12/11/2026)
 
 ### Ajouté
