@@ -7,6 +7,11 @@ Application PWA de la famille `miss-*` / `mister-*`, née du squelette
 [`pwa-starter-kit`](https://github.com/mister-guiiug/pwa-starter-kit) et bâtie
 sur [`@mister-guiiug/dev-pwa-config`](https://github.com/mister-guiiug/dev-pwa-config).
 
+## Guides
+
+- [Installer une borne de jeu sur tablette](https://mister-guiiug.github.io/miss-arcade/installer-une-borne-de-jeu-sur-tablette.html)
+- [Organiser un jeu concours sur un stand](https://mister-guiiug.github.io/miss-arcade/organiser-un-jeu-concours-sur-un-stand.html)
+
 ## Ce que fait l'application
 
 - **La borne** (`/j/<client>`) : plein écran, sans la coquille de
